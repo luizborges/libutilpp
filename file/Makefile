@@ -32,7 +32,7 @@ DLIB_DIR_GLOBAL   = /usr/local/lib/utilpp
 ################################################
 
 C_SRC_LIB       = file.cpp
-C_SRC_MAIN      = main.cpp
+C_SRC_MAIN      = test.cpp
 C_SRC           = $(C_SRC_LIB)
 C_OBJ_ORI       = $(C_SRC:.cpp=.o)
 C_SRC_NAME_ONLY = $(notdir $(C_SRC))
