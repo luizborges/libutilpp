@@ -4,7 +4,7 @@ DLIB_DIR        = $(DLIB_DIR_H)/dlibs
 DLIB_DIR_LPATH  = $(foreach dir,$(DLIB_DIR),   -L$(dir)) # add prefix to all dir
 DLIB_DIR_H_IPATH= $(foreach dir,$(DLIB_DIR_H), -I$(dir)) # add prefix to all dir
 DLIB_DIR_RPATH  = $(foreach dir,$(DLIB_DIR),   -Wl,-rpath=$(dir)) # add prefix to all dir
-DLIB_NAME       = -lerror -lfileUtil -lmemoryManager -lstackTracer -larrayList_noSync -lmap_ArrayList_noSync -labstractFactoryCommon -lutilpp # insert here all dynamics libraries in DLIB_DIR_H you want to use
+DLIB_NAME       = -lerror # insert here all dynamics libraries in DLIB_DIR_H you want to use
 # old -lclientOutput_strMap -lroute_easy -lclientInput_manager -lcookie_manager
 # OLD -LIBCOMMON = -lerror -lmemoryManager -lstackTracer -lfileUtil -larrayList_noSync -lmap_ArrayList_noSync -labstractFactoryCommon
 CFLAGS          = -Wall -g -O3 -DNDEBUG -Wno-variadic-macros -fPIC -Wl,--export-dynamic # Werror transforms warning in error
@@ -16,12 +16,12 @@ LINK_DLIB       = $(LINK_FLAGS) -shared -Wl,-soname,$(LIB)
 ################################################
 # PATHS TO EXPORT LIBRARY TO BE GLOBAL IN SYSTEM
 ################################################
-DLIB_DIR_H_GLOBAL = /usr/local/include/utilpp
-DLIB_DIR_GLOBAL   = /usr/local/lib/utilpp
+DLIB_DIR_H_GLOBAL = /usr/local/include
+DLIB_DIR_GLOBAL   = /usr/local/lib
 ################################################
 # INCLUDE LIBRARIES OF THE LIBRARY
 ################################################
-#PERCENT         = percent/percent.c
+FILE             = file/file.cpp
 #ROUTE           = route/route_easy/route_easy.c
 #IN              = client-input/clientInput_manager/clientInput_manager.c client-input/get/get_strMap/get_strMap.c client-input/post/post_strMap/post_strMap.c
 #OUT             = client-output/clientOutput_strMap/clientOutput_strMap.c
@@ -32,16 +32,16 @@ DLIB_DIR_GLOBAL   = /usr/local/lib/utilpp
 ################################################
 
 C_SRC_LIB       = 
-C_SRC_MAIN      = test.cpp
-C_SRC           = $(C_SRC_LIB)
+C_SRC_MAIN      = 
+C_SRC           = $(FILE) #$(IN) $(OUT) $(COOKIE) $(SESSION)
 C_OBJ_ORI       = $(C_SRC:.cpp=.o)
 C_SRC_NAME_ONLY = $(notdir $(C_SRC))
 C_OBJ_NAME_ONLY = $(C_SRC_NAME_ONLY:.cpp=.o)
 C_OBJ_DIR       = objs/
 C_OBJ           = $(addprefix $(C_OBJ_DIR), $(C_OBJ_NAME_ONLY))
-C_LIB_H         = file.hpp # $(C_SRC_LIB:.c=.h)
-LIB             = $(LIB_NAME_ONLY).1.0.0   # lib$(C_SRC_LIB:.c=.so)
-LIB_NAME_ONLY   = libufile.so
+C_LIB_H         = util.hpp # $(C_SRC_LIB:.cpp=.h)
+LIB             = $(LIB_NAME_ONLY).1.0.0   # lib$(C_SRC_LIB:.cpp=.so)
+LIB_NAME_ONLY   = libutilpp.so
 EXE             = exe
 
 ARG1       = #-q input.dat
@@ -54,10 +54,6 @@ ARG5       = #-e str_end_block.dat
 #	$(info $nrun: $(EXE))
 #	./$(EXE) $(ARG1) $(ARG2) $(ARG3) $(ARG4) $(ARG5)
 
-test: linker
-	$(info $ntesting the library.$nrun: $(EXE))
-	./$(EXE) $(ARG1) $(ARG2) $(ARG3) $(ARG4) $(ARG5)
-
 
 # use this option to create a global library.
 # with this option you can use the library like a default library in the system
@@ -67,7 +63,7 @@ test: linker
 # see the directory for lib.so and the header file.
 # the command to update cache of default libraries could change from a system to anoter.
 glib: cscrean clean_glib linker_lib export_glib_header export_glib 
-	$(info $nDynamic Library created with success: $(LIB) $nDynamic Library Header exported with success: $(C_LIB_H)$nFramework Library exported with success.$nTo use Framework Util++: #include <utilpp/$(C_LIB_H)>)
+	$(info $nDynamic Library created with success: $(LIB) $nDynamic Library Header exported with success: $(C_LIB_H)$nFramework Library exported with success.$nTo use Framework CWEB: #include <$(C_LIB_H)>)
 # can use to print: $(info your_text) $(warning your_text) or $(error your_text) # for new/break line use: $nYour_text - ex: my_text_line1 $nmy_text_line2
 
 # use this option to create a local library.
@@ -81,25 +77,20 @@ glib: cscrean clean_glib linker_lib export_glib_header export_glib
 # example: /home/borges/shared/dlibs
 # PATH_TO_LIBRARY_HEADER_FILE_H = path where is the library's header file (ex: foo.h)
 # example:  /home/borges/shared/headers
-lib: cscrean clean_glib linker_lib export_lib export_lib_header
-	$(info $nDynamic Library created with success: $(LIB) $nDynamic Library Header exported with success: $(C_LIB_H)$nFramework Library exported with success.$nTo use Framework Util++: #include <utilpp/$(C_LIB_H)>)
+lib: cscrean clean_lib linker_lib export_lib export_lib_header
+	$(info $nDynamic Library created with success: $(LIB) $nDynamic Library Header exported with success: $(C_LIB_H)$nFramework Library exported with success.$nTo use Framework CWEB: #include <headers/$(C_LIB_H)>)
 # can use to print: $(info your_text) $(warning your_text) or $(error your_text) # for new/break line use: $nYour_text - ex: my_text_line1 $nmy_text_line2
 # old printed texted messager console	
 #	$(info $nDynamic Library created with success: $(LIB) $nDynamic Library Header exported with success: $(C_LIB_H)$nTo direct use: #include <headers/$(C_LIB_H)> $nFramework Library exported with success.$nTo use Framework CWEB: #include <headers/$(C_LIB_H)>)
 # can use to print: $(info your_text) $(warning your_text) or $(error your_text) # for new/break line use: $nYour_text - ex: my_text_line1 $nmy_text_line2
 
-linker_lib: $(C_SRC:.cpp=.o) mv_c_obj
+linker_lib:  $(C_SRC:.cpp=.o) mv_c_obj
 	$(info $nlinkier objects to produce: $(LIB))
 	$(CC) $(LINK_DLIB) $(C_OBJ) -o $(LIB) $(DLIB)
 
-# comment the below lines to test the global library created - only compile main.cpp
 linker: cscrean clean add_c_src_main $(C_SRC:.cpp=.o) $(C_SRC_MAIN:.cpp=.o) mv_c_obj
 	$(info $nlinker objects to produce: $(EXE))
 	$(CC) $(LINK_FLAGS) $(C_OBJ) -o $(EXE) $(DLIB)
-
-#linker: cscrean clean add_c_src_main $(C_SRC_MAIN:.cpp=.o) mv_c_obj
-#	$(info $nlinker objects to produce: $(EXE))
-#	$(CC) $(LINK_FLAGS) $(C_OBJ) -o $(EXE) $(DLIB)
 
 $(C_SRC:.cpp=.o): %.o : %.cpp
 	$(info $ncompile: $<)

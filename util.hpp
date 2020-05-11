@@ -1,0 +1,110 @@
+/**
+ *
+ * @descripion: funciona como um header que contém toda a biblioteca, é necessário apenas adicionar essa biblioteca para ter acesso a toda a biblioteca.
+ * 
+ */
+#ifndef UTILPP_H
+#define UTILPP_H
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Includes - default libraries
+////////////////////////////////////////////////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <time.h>
+#include <errno.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// Includes - system dependent libraries
+////////////////////////////////////////////////////////////////////////////////
+#if defined(unix) || defined(__unix) || defined(__unix__) || (defined (__APPLE__) && defined (__MACH__)) // Unix (Linux, *BSD, Mac OS X)
+#include <sys/types.h>
+#include <dirent.h>
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Includes - my libraries
+////////////////////////////////////////////////////////////////////////////////
+#include <headers/error.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// Includes - namespace
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// namespace
+////////////////////////////////////////////////////////////////////////////////
+namespace util
+{
+namespace file
+{
+/**
+ * Returns a new line of the file.
+ * Creates a new line.
+ * If line is empty, returns '\0'
+ * Return include the '\n'
+ * If the file is end - return NULL
+ */
+extern char*
+getLine(FILE *file);
+
+
+/**
+ * Abre um arquivo ou trata de um arquivo já aberto e insere todo o seu contéudo em uma string.
+ * Ao final insere o character '\0'.
+ * Ao final de todas as operações, o arquivo é fechado - fclose
+ * O character EOF não é inserido no arranjo retornado.
+ */
+extern char*
+toStr(const char *file_name);
+
+extern char*
+toStr(FILE *file);
+
+} // end of namespace file
+} // end of namespace util
+#endif // UTILPP_H
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

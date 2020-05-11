@@ -5,7 +5,7 @@
 #include <iostream> 
 using namespace std; 
 
-#include <utilpp/file.hpp>
+#include <util.hpp>
 
 void test1();
 void test2();
@@ -26,7 +26,7 @@ void test1() {
 	FILE *f = fopen("file.cpp", "r");
 	char *s = NULL;
 	printf("\n===========================\nInit of file\n===============\n");
-	while(s = util::file::getLine(f)) {
+	while((s = util::file::getLine(f))) {
 		printf("%s", s);
 	}
 	printf("\n===========================\nEnd of file\n===============\n");
