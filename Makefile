@@ -4,7 +4,7 @@ DLIB_DIR        = $(DLIB_DIR_H)/dlibs
 DLIB_DIR_LPATH  = $(foreach dir,$(DLIB_DIR),   -L$(dir)) # add prefix to all dir
 DLIB_DIR_H_IPATH= $(foreach dir,$(DLIB_DIR_H), -I$(dir)) # add prefix to all dir
 DLIB_DIR_RPATH  = $(foreach dir,$(DLIB_DIR),   -Wl,-rpath=$(dir)) # add prefix to all dir
-DLIB_NAME       = -lerror # insert here all dynamics libraries in DLIB_DIR_H you want to use
+DLIB_NAME       = -lerror -lstackTracer# insert here all dynamics libraries in DLIB_DIR_H you want to use
 # old -lclientOutput_strMap -lroute_easy -lclientInput_manager -lcookie_manager
 # OLD -LIBCOMMON = -lerror -lmemoryManager -lstackTracer -lfileUtil -larrayList_noSync -lmap_ArrayList_noSync -labstractFactoryCommon
 CFLAGS          = -Wall -g -O3 -DNDEBUG -Wno-variadic-macros -fPIC -Wl,--export-dynamic # Werror transforms warning in error
@@ -22,18 +22,14 @@ DLIB_DIR_GLOBAL   = /usr/local/lib
 # INCLUDE LIBRARIES OF THE LIBRARY
 ################################################
 FILE             = file/file.cpp
-#ROUTE           = route/route_easy/route_easy.c
-#IN              = client-input/clientInput_manager/clientInput_manager.c client-input/get/get_strMap/get_strMap.c client-input/post/post_strMap/post_strMap.c
-#OUT             = client-output/clientOutput_strMap/clientOutput_strMap.c
-#COOKIE          = cookie/cookie_strMap/cookie_strMap.c
-#SESSION         = session/session_fileMap/session_fileMap.c
+ERROR            = error/error.cpp
 ################################################
 # END
 ################################################
 
 C_SRC_LIB       = 
 C_SRC_MAIN      = 
-C_SRC           = $(FILE) #$(IN) $(OUT) $(COOKIE) $(SESSION)
+C_SRC           = $(FILE) $(ERROR) #$(IN) $(OUT) $(COOKIE) $(SESSION)
 C_OBJ_ORI       = $(C_SRC:.cpp=.o)
 C_SRC_NAME_ONLY = $(notdir $(C_SRC))
 C_OBJ_NAME_ONLY = $(C_SRC_NAME_ONLY:.cpp=.o)
