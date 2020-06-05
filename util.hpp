@@ -45,7 +45,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // namespace
 ////////////////////////////////////////////////////////////////////////////////
-namespace util
+namespace u
 {
 namespace file
 {
@@ -72,6 +72,16 @@ namespace file
 	extern char*
 	toStr(FILE *file);
 } // end of namespace file
+
+
+namespace str
+{
+	// todas as funções trim abaixo alteram a string passada, por isso não o const
+	// cuidado ao delete as string originais
+	extern char* trim(char *s);
+	extern char* ltrim(char *s); // left trim
+	extern char* rtrim(char *s); // right trim
+}
 
 // syntatic sugar to throw error or warning - see the end of this file
 class error
@@ -126,7 +136,7 @@ class error
 	// use this with the macro '_'
 	extern int line; // inicialization in "error/error.cpp", with value -1
 	#ifndef _
-	#define _ util::line = __LINE__;
+	#define _ u::line = __LINE__;
 	#else
 	#error "macro _ is already defined."
 	#endif
@@ -167,67 +177,67 @@ class error
 #if defined(__GNUC__) || defined(__clang__)
 #ifndef err
 #define err(...) \
-	util::error::msg(__LINE__, -1, "ERROR", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef errl
 #define errl(LINE, ...)\
-	util::error::msg(__LINE__, LINE, "ERROR", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, LINE, "ERROR", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef warn
 #define warn(...) \
-	util::error::msg(__LINE__, -1, "WARNING", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, -1, "WARNING", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef warnl
 #define warnl(LINE, ...)\
-   util::error::msg(__LINE__, LINE, "WARNING", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
+   u::error::msg(__LINE__, LINE, "WARNING", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #elif defined(_MSC_VER) // compilaor da microsoft
 #ifndef err
 #define err(...) \
-	util::error::msg(__LINE__, -1, "ERROR", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef errl
 #define errl(LINE, ...)\
-	util::error::msg(__LINE__, LINE, "ERROR", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, LINE, "ERROR", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef warn
 #define warn(...) \
-	util::error::msg(__LINE__, -1, "WARNING", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, -1, "WARNING", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef warnl
 #define warnl(LINE, ...)\
-	util::error::msg(__LINE__, LINE, "WARNING", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, LINE, "WARNING", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #else // qualquer outro compilador
 #ifndef err
 #define err(...) \
-	util::error::msg(__LINE__, -1, "ERROR", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef errl
 #define errl(LINE, ...)\
-	util::error::msg(__LINE__, LINE, "ERROR", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, LINE, "ERROR", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef warn
 #define warn(...) \
-	util::error::msg(__LINE__, -1, "WARNING", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, -1, "WARNING", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
 #ifndef warnl
 #define warnl(LINE, ...)\
-	util::error::msg(__LINE__, LINE, "WARNING", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
+	u::error::msg(__LINE__, LINE, "WARNING", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif // 
 #endif // else -> compiler option
-#endif // UTILPP_H
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // implentation of C function
@@ -240,14 +250,14 @@ class error
 // stdlib.h
 ////////////////////////////////////////////////////////////////////////////////
 template <typename T>
-T* p(T* ptr)
+T* u::p(T* ptr)
 {
 	if(ptr == nullptr) throw err("pointer is nullptr");
 	return ptr;
 }
 
 template <typename T>
-T& r(T* ptr)
+T& u::r(T* ptr)
 {
 	if(ptr == nullptr) throw err("pointer is nullptr");
 	return *ptr;
@@ -255,7 +265,7 @@ T& r(T* ptr)
 
 
 
-
+#endif // UTILPP_H
 
 
 

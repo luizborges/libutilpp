@@ -1,14 +1,14 @@
 #include "../util.hpp"
 
-int u::line = -1; // iniciatlization
+int util::line = -1; // iniciatlization
 
-bool u::error::header = true; // initializing
-char u::error::ErrorInfo[];
-char u::error::ErrorMsg[];
-static u::error _error;
+bool util::error::header = true; // initializing
+char util::error::ErrorInfo[];
+char util::error::ErrorMsg[];
+static util::error _error;
 
-u::error&
-u::error::msg(
+util::error&
+util::error::msg(
 	const int line,
 	const int line_call_me,
 	const char *type,
@@ -66,13 +66,13 @@ u::error::msg(
 }
 
 void
-u::error::set_header(bool header)
+util::error::set_header(bool header)
 {
 	error::header = header;
 }
 
 void
-u::error::show_header(const char *type)
+util::error::show_header(const char *type)
 {
 	//////////////////////////////////////////////////////////////////////////////
 	// time information
@@ -91,8 +91,8 @@ u::error::show_header(const char *type)
 	fprintf(stderr, "TIME %s: %s", type, strTimer);
 }
 
-u::error&
-u::error::msgv(
+util::error&
+util::error::msgv(
 	const int line,
 	const int line_call_me,
 	const char *type,

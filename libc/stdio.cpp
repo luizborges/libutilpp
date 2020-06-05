@@ -7,7 +7,7 @@
  * código já implmentado e testado.
  */
 /*
-FILE* util::fopen(
+FILE* u::fopen(
 	const char *filename,
 	const char *mode,
 	const int line,
@@ -16,18 +16,18 @@ FILE* util::fopen(
 	FILE *file = nullptr;
 	if(filename == nullptr)
 	{
-		strcpy(util::errorMsg, "filename is nullptr");
+		strcpy(u::errorMsg, "filename is nullptr");
 		goto THROW_ERROR;
 	}
 	if(mode == nullptr)
 	{
-		strcpy(util::errorMsg, "mode is nullptr");
+		strcpy(u::errorMsg, "mode is nullptr");
 		goto THROW_ERROR;
 	}
 	file = std::fopen(filename, mode);
 	if(file == nullptr)
 	{
-		snprintf(util::errorMsg, 4096, "error in open file.\nfile name: \"%s\"\n"
+		snprintf(u::errorMsg, 4096, "error in open file.\nfile name: \"%s\"\n"
 		"mode: \"%s\"\nerro is %d\nstr erro is \"%s\"", 
 		filename, mode, errno, strerror(errno));
 		
@@ -37,15 +37,15 @@ FILE* util::fopen(
 			va_start(arg, msg);
 		}
 		
-		throw util::error::msgv(__LINE__, line, "ERROR", __FILE__, __PRETTY_FUNCTION__, 
-			util::errorMsg, msg, arg);
+		throw u::error::msgv(__LINE__, line, "ERROR", __FILE__, __PRETTY_FUNCTION__, 
+			u::errorMsg, msg, arg);
 	}
 	
 	return file;
 }
 */
 
-FILE* util::fopen(
+FILE* u::fopen(
 	const char *filename,
 	const char *mode)
 {
@@ -64,7 +64,7 @@ FILE* util::fopen(
 }
 
 
-int util::fgetpos(
+int u::fgetpos(
 	FILE *stream,
 	fpos_t *pos)
 {
@@ -81,7 +81,7 @@ int util::fgetpos(
 	return error;
 }
 
-long int util::ftell(
+long int u::ftell(
 	FILE *stream)
 {
 	if(stream == nullptr) throw err("stream is nullptr");
@@ -93,7 +93,7 @@ long int util::ftell(
 	return sizeFile;
 }
 
-int util::fsetpos(
+int u::fsetpos(
 	FILE *stream,
 	fpos_t *pos)
 {
@@ -109,7 +109,7 @@ int util::fsetpos(
 	return error;
 }
 
-int util::fseek(
+int u::fseek(
 	FILE *stream, 
 	long int offset, 
 	int whence)
@@ -123,7 +123,7 @@ int util::fseek(
 	return error;
 }
 
-size_t util::fread(
+size_t u::fread(
 	void *ptr, 
 	size_t size, 
 	size_t nmemb,
@@ -142,7 +142,7 @@ size_t util::fread(
 	return read;
 }
 
-size_t util::fwrite(
+size_t u::fwrite(
 	const void *ptr, 
 	size_t size, 
 	size_t nmemb,
@@ -161,7 +161,7 @@ size_t util::fwrite(
 	return write;
 }
 
-int util::fclose(
+int u::fclose(
 	FILE *stream)
 {
 	if(stream == nullptr) throw err("stream is nullptr");
