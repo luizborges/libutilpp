@@ -1,4 +1,4 @@
-#include "file.hpp"
+#include "../util.hpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -13,16 +13,13 @@
 char*
 util::file::getLine(FILE *file)
 {
+ int lineSize = -1;
+ try {
 	fpos_t pos;
-    int lineSize, i;
+    int i;
     char *line;
     
-    i = fgetpos(file, &pos);
-    if (i != 0) { 
-    	Error("fgetpos.\nError in get the pos of init of reading file.\n"
-    	"File pointer is %p\nerro is %d\nstr erro is \"%s\"",
-    	file, errno, strerror(errno));
-    }
+    util::fgetpos(file, &pos);
     
     // procura o final da linha
     for (lineSize = 0;
@@ -30,22 +27,12 @@ util::file::getLine(FILE *file)
          ++lineSize);
     
     if (lineSize == 0 && i == EOF) {
-    	return NULL; // se a linha é vazia e fim do arquivo
+    	return nullptr; // se a linha é vazia e fim do arquivo
     }
     
-    line = static_cast<char*>(malloc(lineSize +2));
-    if(line == NULL) {
-    	Error("Allocate space for new line. - Line Size: %d\nerro is %d\nstr erro is \"%s\"",
-    		lineSize, errno, strerror(errno));
-    }
+    line = new char[lineSize +2];
     
-    i = fsetpos(file, &pos); // seta o arquivo no comeco da linha
-    if (i != 0) {
-    	Error("Set fsetpos to the begging of the line in file.\n"
-    	"File pointer is %p\nerro is %d\nstr erro is \"%s\"",
-    	file, errno, strerror(errno));
-    }
-    
+    util::fsetpos(file, &pos); // seta o arquivo no comeco da linha
     for (i = 0; i <= lineSize; ++i) {
         line[i] = getc(file); // preenche a string com os dados da linha
     }
@@ -53,141 +40,82 @@ util::file::getLine(FILE *file)
     line[i] = '\0'; // seta o caractere de final de linha
     
     return line;
+ } catch(util::error& e) {throw err();}
+ catch(std::bad_alloc& e) {
+ 	throw err("std::bad_alloc - Trying allocated: %d", lineSize +2);
+ }
 }
 
 
 char*
 util::file::toStr(const char *file_name)
 {
-	/////////////////////////////////////////////////////////////////////////////////
-	// verifica os argumentos
-	/////////////////////////////////////////////////////////////////////////////////
-	if(file_name == NULL) {
-		Error("file name is NULL.");
-	}
-	
-	FILE *file_ = fopen(file_name, "r");
-	if(file_ == NULL) {
-		Error("error in open file.\nfile name: \"%s\"\nerro is %d\nstr erro is \"%s\"",
-    	file_name, errno, strerror(errno));
-	}
-	
+	long sizeFile = -1L;
+ try {
+	FILE *file_ = util::fopen(file_name, "r");
 	/////////////////////////////////////////////////////////////////////////////////
 	// descobre o número de bytes para o fim do arquivo
 	/////////////////////////////////////////////////////////////////////////////////
-	long sizeCurrent = ftell(file_); // descobre o tamanho do arquivo por agora
+	// descobre o tamanho do arquivo por agora
+	long sizeCurrent = util::ftell(file_);
 	fpos_t pos;
-	int error = fgetpos(file_, &pos);
-	if(error != 0) {
-		Error("error in keep position of file.\nfgetpos error code: %d\nfile name: \"%s\"\n"
-		"erro is %d\nstr erro is \"%s\"", error, file_name, errno, strerror(errno));
-	}
-	
-	error = fseek(file_, 0, SEEK_END); // vai até o fim do arquivo
-	if(error != 0) {
-		 Error("error in get the end of file.\nfseek error code: %d\nfile name: \"%s\"\n"
-		 "erro is %d\nstr erro is \"%s\"", error, file_name, errno, strerror(errno));
-	}
-	
-	long sizeFile = ftell(file_); // descobre o tamanho total
-	if(sizeFile == -1L) {
-		Error("error in get the size of file.\nftell returned: %ld\nfile name: \"%s\"\n"
-		"erro is %d\nstr erro is \"%s\"", sizeFile, file_name, errno, strerror(errno));
-	}
-	
-	sizeFile = sizeFile -sizeCurrent +1; // 1 pois a subtração retira 1 e 1 para guardar o charactere '\0'
-	
-	error = fsetpos(file_, &pos); // recupera a posição do arquivo inicial
-	if(error != 0) {
-		Error("error in restored position of file.\nfsetpos error code: %d\n"
-		"file name: \"%s\"\nerro is %d\nstr erro is \"%s\"",
-		error, file_name, errno, strerror(errno));
-	}
+	util::fgetpos(file_, &pos);
+	util::fseek(file_, 0, SEEK_END); // vai até o fim do arquivo
+	sizeFile = util::ftell(file_); // descobre o tamanho total
+	 // 1 pois a subtração retira 1 e 1 para guardar o charactere '\0'
+	sizeFile = sizeFile -sizeCurrent +1;
+	util::fsetpos(file_, &pos); // recupera a posição do arquivo inicial
 	
 	/////////////////////////////////////////////////////////////////////////////////
 	// cria a string e insere o valor conteúdo do arquivo nela
 	/////////////////////////////////////////////////////////////////////////////////
-	char *str = static_cast<char*>(malloc(sizeFile));
-	if(str == NULL) {
-		Error("error in allocate memory to resulted string\nfile name: \"%s\"\n"
-		"erro is %d\nstr erro is \"%s\"", sizeFile, file_name, errno, strerror(errno));
-	}
+	char *str = new char[sizeFile];
 	
-	long read = fread(str, 1, sizeFile, file_);
-	if(read != (sizeFile -1)) {
-		Error("error in difference of bytes read.\nfread: %ld\nsizeFile: %ld\n"
-		"sizeFile - fread: %ld\nfile name: \"%s\"\nerro is %d\nstr erro is \"%s\"",
-		read, sizeFile, sizeFile - read, file_name, errno, strerror(errno));
-	}
+	util::fread(str, 1, sizeFile, file_);
 
 	str[sizeFile-1] = '\0'; // insere o charactere de fim de string na última linha
-	fclose(file_); // fecha o arquivo
+	util::fclose(file_); // fecha o arquivo
 
 	return str;
+ } catch(util::error& e) { throw err(); }
+ catch(std::bad_alloc& e) {
+ 	throw err("std::bad_alloc - Trying allocated: %d", sizeFile);
+ }
 }
 
 
 char*
 util::file::toStr(FILE *file_)
 {
-	/////////////////////////////////////////////////////////////////////////////////
-	// verifica os argumentos
-	/////////////////////////////////////////////////////////////////////////////////
-	if(file_ == NULL) {
-		Error("file pointer is NULL.");
-	}
-	
+	long sizeFile = -1L;
+ try {
 	/////////////////////////////////////////////////////////////////////////////////
 	// descobre o número de bytes para o fim do arquivo
 	/////////////////////////////////////////////////////////////////////////////////
-	long sizeCurrent = ftell(file_); // descobre o tamanho do arquivo por agora
+	 // descobre o tamanho do arquivo por agora
+	long sizeCurrent = util::ftell(file_);
 	fpos_t pos;
-	int error = fgetpos(file_, &pos);
-	if(error != 0) {
-		Error("error in keep position of file.\nfgetpos error code: %d\nfile pointer: %p\n"
-		"erro is %d\nstr erro is \"%s\"", error, file_, errno, strerror(errno));
-	}
-	
-	error = fseek(file_, 0, SEEK_END); // vai até o fim do arquivo
-	if(error != 0) {
-		 Error("error in get the end of file.\nfseek error code: %d\nfile pointer: %p\n"
-		 "erro is %d\nstr erro is \"%s\"", error, file_, errno, strerror(errno));
-	}
-	
-	long sizeFile = ftell(file_); // descobre o tamanho total
-	if(sizeFile == -1L) {
-		Error("error in get the size of file.\nftell returned: %ld\nfile pointer: %p\n"
-		"erro is %d\nstr erro is \"%s\"", sizeFile, file_, errno, strerror(errno));
-	}
-	
-	sizeFile = sizeFile -sizeCurrent +1; // 1 pois a subtração retira 1 e 1 para guardar o charactere '\0'
-	
-	error = fsetpos(file_, &pos); // recupera a posição do arquivo inicial
-	if(error != 0) {
-		Error("error in restored position of file.\nfsetpos error code: %d\n"
-		"file pointer: %p\nerro is %d\nstr erro is \"%s\"",
-		error, file_, errno, strerror(errno));
-	}
+	util::fgetpos(file_, &pos);
+	util::fseek(file_, 0, SEEK_END); // vai até o fim do arquivo
+	sizeFile = util::ftell(file_); // descobre o tamanho total
+	// 1 pois a subtração retira 1 e 1 para guardar o charactere '\0'
+	sizeFile = sizeFile -sizeCurrent +1;
+	util::fsetpos(file_, &pos); // recupera a posição do arquivo inicial
 	
 	/////////////////////////////////////////////////////////////////////////////////
 	// cria a string e insere o valor conteúdo do arquivo nela
 	/////////////////////////////////////////////////////////////////////////////////
-	char *str = static_cast<char*>(malloc(sizeFile));
-	if(str == NULL) {
-		Error("error in allocate memory to resulted string\nfile pointer: %p\n"
-		"erro is %d\nstr erro is \"%s\"", sizeFile, file_, errno, strerror(errno));
-	}
+	char *str = new char[sizeFile];
 	
-	long read = fread(str, 1, sizeFile, file_);
-	if(read != (sizeFile -1)) {
-		Error("error in difference of bytes read.\nfread: %ld\nsizeFile: %ld\n"
-		"sizeFile - fread: %ld\nfile pointer: %p\nerro is %d\nstr erro is \"%s\"",
-		read, sizeFile, sizeFile - read, file_, errno, strerror(errno));
-	}
+	util::fread(str, 1, sizeFile, file_);
 
 	str[sizeFile-1] = '\0'; // insere o charactere de fim de string na última linha
-	fclose(file_); // fecha o arquivo
+	util::fclose(file_); // fecha o arquivo
 
 	return str;
+ } catch(util::error& e) { throw err(); }
+ catch(std::bad_alloc& e) {
+ 	throw err("std::bad_alloc - Trying allocated: %d", sizeFile);
+ }
 }
 

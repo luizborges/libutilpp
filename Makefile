@@ -23,13 +23,15 @@ DLIB_DIR_GLOBAL   = /usr/local/lib
 ################################################
 FILE             = file/file.cpp
 ERROR            = error/error.cpp
+LIBC_STDIO       = libc/stdio.cpp
+LIBC_STDLIB      = libc/stdlib.cpp
 ################################################
 # END
 ################################################
 
 C_SRC_LIB       = 
 C_SRC_MAIN      = 
-C_SRC           = $(FILE) $(ERROR) #$(IN) $(OUT) $(COOKIE) $(SESSION)
+C_SRC           = $(FILE) $(ERROR) $(LIBC_STDIO) $(LIBC_STDLIB) #$(IN) $(OUT) $(COOKIE) $(SESSION)
 C_OBJ_ORI       = $(C_SRC:.cpp=.o)
 C_SRC_NAME_ONLY = $(notdir $(C_SRC))
 C_OBJ_NAME_ONLY = $(C_SRC_NAME_ONLY:.cpp=.o)

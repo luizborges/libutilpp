@@ -10,7 +10,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes - default libraries
 ////////////////////////////////////////////////////////////////////////////////
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -19,6 +18,11 @@
 #include <time.h>
 #include <errno.h>
 #include <stdarg.h>
+
+#include <cstdio>
+#include <string>
+#include <new>
+#include <exception>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Includes - system dependent libraries
@@ -50,7 +54,7 @@ namespace file
 	 * Creates a new line.
 	 * If line is empty, returns '\0'
 	 * Return include the '\n'
-	 * If the file is end - return NULL
+	 * If the file is end - return nullptr
 	 */
 	extern char*
 	getLine(FILE *file);
@@ -77,21 +81,83 @@ class error
 					const char *type = "",
 					const char *file = "",
 					const char *func = "",
-					const char *check_args = NULL,  ...);
+					const char *check_args = nullptr,  ...);
+	
+	/**
+	 * Essa função pode ser utilizada quando a função que a chama já recebe um número
+	 * indefinido de argumntos. - A mudança na ordem dos argumentos foi para possibilitar
+	 * o overloading. - essa segunda ordem, não possui macro ainda
+	 */
+	static error& msgv(
+		const int line = -1,
+		const int line_call_me = -1,
+		const char *type = "",
+		const char *file = "",
+		const char *func = "",
+		const char *msg = "",
+		const char *msg_va = nullptr,
+		va_list arg = nullptr);
 					
 	/**
 	 * Seta se o cabeçalho será exibido ou não.
 	 * por default ele já é xibido, então não existe necessidade utilizar está função
 	 */
 	static void set_header(bool header = true);
-	
  private:
 	static char ErrorInfo[1024];
 	static char ErrorMsg[4096];
 	static bool header;
-	
 	static void show_header(const char *type = "ERROR");
 };
+
+	////////////////////////////////////////////////////////////////////////////////
+	// syntatic sugar for tracking line
+	////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * in gcc(version > 4.8) can be used the function "__builtin_LINE()"
+	 * to get the line who call the function.
+	 * for this you can pass it in function arguments, with the advantage that it 
+	 * can be a hidden parameter:
+	 * example: declaration of function: "extern int foo(int line = __builtin_LINE());"
+	 * using: foo(); -> with this is not necessary to explicitly call __LINE__ macro in 
+	 * arguments of function foo(__LINE__);
+	 */
+	// use this line to track lines in functions
+	// use this with the macro '_'
+	extern int line; // inicialization in "error/error.cpp", with value -1
+	#ifndef _
+	#define _ util::line = __LINE__;
+	#else
+	#error "macro _ is already defined."
+	#endif
+	////////////////////////////////////////////////////////////////////////////////
+	// encapsulate the c functions
+	////////////////////////////////////////////////////////////////////////////////
+	// use this function to let the user insert a error msg in the function
+	// como a ideia é agilizar a codificação, a construção de todas as funções da libC
+	// aceitando uma mensagem de erro com argumentos indefinidos pois avaliada como sendo
+	// um custo desnecessário.
+	// caso se reavalie isto, basta apenas utilizar o modelo já implementado dela nas
+	// funções abaixo. - já estão funcionando
+	// static char errorMsg[4096];
+	// extern FILE* fopen(const char *filename, const char *mode, const int line = -1, const char *msg = nullptr, ...);
+	
+	////////////////////////////////////////////////////////////////////////////////
+	// stdio.h
+	////////////////////////////////////////////////////////////////////////////////
+	extern FILE* fopen(const char *filename, const char *mode);
+	extern int fgetpos(FILE *stream, fpos_t *pos);
+	extern long int ftell(FILE *stream);
+	extern int fsetpos(FILE *stream, fpos_t *pos);
+	extern int fseek(FILE *stream, long int offset, int whence);
+	extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+	extern size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+	extern int fclose(FILE *stream);
+	////////////////////////////////////////////////////////////////////////////////
+	// stdlib.h
+	////////////////////////////////////////////////////////////////////////////////
+	template <typename T> extern T* p(T* ptr);
+	template <typename T> extern T& r(T* ptr);
 
 } // end of namespace util
 
@@ -164,15 +230,28 @@ class error
 #endif // UTILPP_H
 
 ////////////////////////////////////////////////////////////////////////////////
-//
+// implentation of C function
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// stdio.h
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// stdlib.h
+////////////////////////////////////////////////////////////////////////////////
+template <typename T>
+T* p(T* ptr)
+{
+	if(ptr == nullptr) throw err("pointer is nullptr");
+	return ptr;
+}
 
-
-
-
-
-
+template <typename T>
+T& r(T* ptr)
+{
+	if(ptr == nullptr) throw err("pointer is nullptr");
+	return *ptr;
+}
 
 
 
