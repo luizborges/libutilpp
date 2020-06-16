@@ -28,5 +28,64 @@ char* u::str::rtrim(char* s)
 }
 
 
+int u::str::cpy(
+	char *dest,
+	const int dest_size,
+	const char *src,
+	const int n)
+{
+	if(dest == nullptr) throw err("dest is nullptr");
+	if(dest_size < 1) throw err("size of destination is less than 1.\nsize of destination = %d", dest_size);
+	if(src == nullptr) throw err("src is nullptr");
+	if(n < -1) throw err("n is invalid.\nn = %d", n);
+	
+	int len = 0;
+	if(n == -1) {
+		len = dest_size -1;
+	} else {
+		len = dest_size-1 < n ? dest_size-1 : n;
+	}
+	
+	int i = 0;
+	for(; i < len; ++i)
+	{
+		if(src[i] == '\0') break;
+		dest[i] = src[i];
+	}
+	
+	dest[i] = '\0';
+	
+	return i-1 <= 0 ? 0 : i -1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

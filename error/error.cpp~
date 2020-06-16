@@ -1,14 +1,14 @@
 #include "../util.hpp"
 
-int util::line = -1; // iniciatlization
+int u::line = -1; // iniciatlization
 
-bool util::error::header = true; // initializing
-char util::error::ErrorInfo[];
-char util::error::ErrorMsg[];
-static util::error _error;
+bool u::error::header = true; // initializing
+char u::error::ErrorInfo[];
+char u::error::ErrorMsg[];
+static u::error _error;
 
-util::error&
-util::error::msg(
+u::error&
+u::error::msg(
 	const int line,
 	const int line_call_me,
 	const char *type,
@@ -66,13 +66,13 @@ util::error::msg(
 }
 
 void
-util::error::set_header(bool header)
+u::error::set_header(bool header)
 {
 	error::header = header;
 }
 
 void
-util::error::show_header(const char *type)
+u::error::show_header(const char *type)
 {
 	//////////////////////////////////////////////////////////////////////////////
 	// time information
@@ -81,18 +81,18 @@ util::error::show_header(const char *type)
 	const char *strTimer = asctime(localtime(&timer));
 	
 	fprintf(stderr, "\n");
-	fprintf(stderr, "*****************************************\n");
+	fprintf(stderr, "*************************************\n");
 	if(strcmp(type, "WARNING") == 0) {
-		fprintf(stderr, "*************  WARNING MSG  *************\n");
+		fprintf(stderr, "***********  WARNING MSG  ***********\n");
 	} else {
-		fprintf(stderr, "**************  %s MSG  **************\n", type);
+		fprintf(stderr, "************  %s MSG  ************\n", type);
 	}
-	fprintf(stderr, "*****************************************\n");
+	fprintf(stderr, "*************************************\n");
 	fprintf(stderr, "TIME %s: %s", type, strTimer);
 }
 
-util::error&
-util::error::msgv(
+u::error&
+u::error::msgv(
 	const int line,
 	const int line_call_me,
 	const char *type,

@@ -7,53 +7,53 @@
  * código já implmentado e testado.
  */
 /*
-FILE* util::fopen(
+FILE* u::fopen(
 	const char *filename,
 	const char *mode,
 	const int line,
 	const char *msg, ...)
 {
-	FILE *file = NULL;
-	if(filename == NULL)
+	FILE *file = nullptr;
+	if(filename == nullptr)
 	{
-		strcpy(util::errorMsg, "filename is NULL");
+		strcpy(u::errorMsg, "filename is nullptr");
 		goto THROW_ERROR;
 	}
-	if(mode == NULL)
+	if(mode == nullptr)
 	{
-		strcpy(util::errorMsg, "mode is NULL");
+		strcpy(u::errorMsg, "mode is nullptr");
 		goto THROW_ERROR;
 	}
 	file = std::fopen(filename, mode);
-	if(file == NULL)
+	if(file == nullptr)
 	{
-		snprintf(util::errorMsg, 4096, "error in open file.\nfile name: \"%s\"\n"
+		snprintf(u::errorMsg, 4096, "error in open file.\nfile name: \"%s\"\n"
 		"mode: \"%s\"\nerro is %d\nstr erro is \"%s\"", 
 		filename, mode, errno, strerror(errno));
 		
 		THROW_ERROR:
 		va_list arg;
-		if(msg != NULL) {
+		if(msg != nullptr) {
 			va_start(arg, msg);
 		}
 		
-		throw util::error::msgv(__LINE__, line, "ERROR", __FILE__, __PRETTY_FUNCTION__, 
-			util::errorMsg, msg, arg);
+		throw u::error::msgv(__LINE__, line, "ERROR", __FILE__, __PRETTY_FUNCTION__, 
+			u::errorMsg, msg, arg);
 	}
 	
 	return file;
 }
 */
 
-FILE* util::fopen(
+FILE* u::fopen(
 	const char *filename,
 	const char *mode)
 {
-	if(filename == NULL) throw err("filename is NULL");
-	if(mode == NULL) throw err("mode is NULL");
+	if(filename == nullptr) throw err("filename is nullptr");
+	if(mode == nullptr) throw err("mode is nullptr");
 	
 	FILE *file = std::fopen(filename, mode);
-	if(file == NULL)
+	if(file == nullptr)
 	{
 		throw err("error in open file.\nfile name: \"%s\"\n"
 		"mode: \"%s\"\nerro is %d\nstr erro is \"%s\"", 
@@ -64,12 +64,12 @@ FILE* util::fopen(
 }
 
 
-int util::fgetpos(
+int u::fgetpos(
 	FILE *stream,
 	fpos_t *pos)
 {
-	if(stream == NULL) throw err("stream is NULL");
-	if(pos == NULL) throw err("pos is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
+	if(pos == nullptr) throw err("pos is nullptr");
 	int error = std::fgetpos(stream, pos);
 	if(error != 0)
 	{
@@ -81,10 +81,9 @@ int util::fgetpos(
 	return error;
 }
 
-long int util::ftell(
-	FILE *stream)
+long int u::ftell(FILE *stream)
 {
-	if(stream == NULL) throw err("stream is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
 	long sizeFile = std::ftell(stream);
 	if(sizeFile == -1L) {
 		throw err("error in get the size of file.\nftell returned: %ld\n"
@@ -93,12 +92,12 @@ long int util::ftell(
 	return sizeFile;
 }
 
-int util::fsetpos(
+int u::fsetpos(
 	FILE *stream,
 	fpos_t *pos)
 {
-	if(stream == NULL) throw err("stream is NULL");
-	if(pos == NULL) throw err("pos is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
+	if(pos == nullptr) throw err("pos is nullptr");
 	int error = std::fsetpos(stream, pos);
 	if(error != 0)
 	{
@@ -109,12 +108,12 @@ int util::fsetpos(
 	return error;
 }
 
-int util::fseek(
+int u::fseek(
 	FILE *stream, 
 	long int offset, 
 	int whence)
 {
-	if(stream == NULL) throw err("stream is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
 	int error = std::fseek(stream, offset, whence); // vai até o fim do arquivo
 	if(error != 0) {
 		 throw err("error in get the new position of stream.\nfseek error code: %d\n"
@@ -123,16 +122,16 @@ int util::fseek(
 	return error;
 }
 
-size_t util::fread(
+size_t u::fread(
 	void *ptr, 
 	size_t size, 
 	size_t nmemb,
 	FILE *stream)
 {
-	if(ptr == NULL) throw err("ptr is NULL");
+	if(ptr == nullptr) throw err("ptr is nullptr");
 	if(size == 0) throw err("size is 0");
 	if(nmemb == 0) throw err("nmemb is 0");
-	if(stream == NULL) throw err("stream is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
 	size_t read = std::fread(ptr, size, nmemb, stream);
 	if(read != nmemb) {
 		throw err("error in difference of bytes read.\nfread: %zu\nnmemb: %zu\n"
@@ -142,16 +141,16 @@ size_t util::fread(
 	return read;
 }
 
-size_t util::fwrite(
+size_t u::fwrite(
 	const void *ptr, 
 	size_t size, 
 	size_t nmemb,
 	FILE *stream)
 {
-	if(ptr == NULL) throw err("ptr is NULL");
+	if(ptr == nullptr) throw err("ptr is nullptr");
 	if(size == 0) throw err("size is 0");
 	if(nmemb == 0) throw err("nmemb is 0");
-	if(stream == NULL) throw err("stream is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
 	size_t write = std::fwrite(ptr, size, nmemb, stream);
 	if(write != nmemb) {
 		throw err("error in difference of bytes write.\nfrwrite: %zu\nnmemb: %zu\n"
@@ -161,10 +160,9 @@ size_t util::fwrite(
 	return write;
 }
 
-int util::fclose(
-	FILE *stream)
+int u::fclose(FILE *stream)
 {
-	if(stream == NULL) throw err("stream is NULL");
+	if(stream == nullptr) throw err("stream is nullptr");
 	int r = std::fclose(stream);
 	if(r != 0) {
 		throw err("error in close stream.\nfclose returned: %d\n"
@@ -173,7 +171,16 @@ int util::fclose(
 	return r;
 }
 
-
+int u::remove(const char *filename)
+{
+	if(filename == nullptr) throw err("filename is nullptr");
+	int r = std::remove(filename);
+	if(r != 0) {
+		throw err("error in remove file.\nremove returned: %d\n"
+		"erro is %d\nstr erro is \"%s\"", r, errno, strerror(errno));
+	}
+	return r;
+}
 
 
 

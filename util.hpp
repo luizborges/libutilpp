@@ -12,7 +12,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
@@ -20,7 +19,7 @@
 #include <stdarg.h>
 
 #include <cstdio>
-#include <string>
+#include <cstring>
 #include <new>
 #include <exception>
 
@@ -81,6 +80,26 @@ namespace str
 	extern char* trim(char *s);
 	extern char* ltrim(char *s); // left trim
 	extern char* rtrim(char *s); // right trim
+	
+	/**
+	 * Função safe para substituir o strncpy.
+	 * Fiz ela para ficar mais simples e intuitívo de se gerir.
+	 * @dest_size = número de carateres máximo que será copiado para dentro de dest.
+	 * seráo copiados no máximo dest_size-1. sempre ao final coloca o characater '\n'
+	 * se o dest_size for 1 -> coloca somente o character '\0'.
+	 * @n = número efetivo de characteres que serão copiados de src.
+	 * pode-se usar assim n = strlen(src).
+	 * @obs: diferentemente de dest_size, n copia o número exato de characteres de n,
+	 * caso não encontre antes o character '\n'.
+	 * @obs2: caso o character '\n' for encontrado antes de se alcançar o valor de dest_size ou n,
+	 * a cópia para, insere o valor de '\n' e retorna.
+	 * @return: retorna o número de characteres efetivamente copiados.
+	 */
+	extern int cpy(
+		char *dest,
+		const int dest_size,
+		const char *src,
+		const int n = -1);
 }
 
 // syntatic sugar to throw error or warning - see the end of this file
@@ -163,12 +182,16 @@ class error
 	extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 	extern size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 	extern int fclose(FILE *stream);
+	extern int remove(const char *filename);
 	////////////////////////////////////////////////////////////////////////////////
 	// stdlib.h
 	////////////////////////////////////////////////////////////////////////////////
 	template <typename T> extern T* p(T* ptr);
 	template <typename T> extern T& r(T* ptr);
-
+	////////////////////////////////////////////////////////////////////////////////
+	// string.h
+	////////////////////////////////////////////////////////////////////////////////
+	extern int strncmp(const char *str1, const char *str2, const int n);
 } // end of namespace util
 
 ////////////////////////////////////////////////////////////////////////////////

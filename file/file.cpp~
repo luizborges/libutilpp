@@ -71,7 +71,8 @@ u::file::toStr(const char *file_name)
 	/////////////////////////////////////////////////////////////////////////////////
 	char *str = new char[sizeFile];
 	
-	u::fread(str, 1, sizeFile, file_);
+	// sizeFile é 1byte maior que o tamanho do arquivo - guardar o '\0' na string
+	u::fread(str, 1, sizeFile-1, file_);
 
 	str[sizeFile-1] = '\0'; // insere o charactere de fim de string na última linha
 	u::fclose(file_); // fecha o arquivo
@@ -107,7 +108,8 @@ u::file::toStr(FILE *file_)
 	/////////////////////////////////////////////////////////////////////////////////
 	char *str = new char[sizeFile];
 	
-	u::fread(str, 1, sizeFile, file_);
+	// sizeFile é 1byte maior que o tamanho do arquivo - guardar o '\0' na string
+	u::fread(str, 1, sizeFile-1, file_);
 
 	str[sizeFile-1] = '\0'; // insere o charactere de fim de string na última linha
 	u::fclose(file_); // fecha o arquivo

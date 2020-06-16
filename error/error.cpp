@@ -81,13 +81,13 @@ u::error::show_header(const char *type)
 	const char *strTimer = asctime(localtime(&timer));
 	
 	fprintf(stderr, "\n");
-	fprintf(stderr, "*****************************************\n");
+	fprintf(stderr, "*************************************\n");
 	if(strcmp(type, "WARNING") == 0) {
-		fprintf(stderr, "*************  WARNING MSG  *************\n");
+		fprintf(stderr, "***********  WARNING MSG  ***********\n");
 	} else {
-		fprintf(stderr, "**************  %s MSG  **************\n", type);
+		fprintf(stderr, "************  %s MSG  ************\n", type);
 	}
-	fprintf(stderr, "*****************************************\n");
+	fprintf(stderr, "*************************************\n");
 	fprintf(stderr, "TIME %s: %s", type, strTimer);
 }
 

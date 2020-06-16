@@ -81,8 +81,7 @@ int u::fgetpos(
 	return error;
 }
 
-long int u::ftell(
-	FILE *stream)
+long int u::ftell(FILE *stream)
 {
 	if(stream == nullptr) throw err("stream is nullptr");
 	long sizeFile = std::ftell(stream);
@@ -161,8 +160,7 @@ size_t u::fwrite(
 	return write;
 }
 
-int u::fclose(
-	FILE *stream)
+int u::fclose(FILE *stream)
 {
 	if(stream == nullptr) throw err("stream is nullptr");
 	int r = std::fclose(stream);
@@ -173,7 +171,16 @@ int u::fclose(
 	return r;
 }
 
-
+int u::remove(const char *filename)
+{
+	if(filename == nullptr) throw err("filename is nullptr");
+	int r = std::remove(filename);
+	if(r != 0) {
+		throw err("error in remove file.\nremove returned: %d\n"
+		"erro is %d\nstr erro is \"%s\"", r, errno, strerror(errno));
+	}
+	return r;
+}
 
 
 
