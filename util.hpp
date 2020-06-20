@@ -13,13 +13,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-#include <ctype.h>
 #include <time.h>
 #include <errno.h>
 #include <stdarg.h>
 
 #include <cstdio>
 #include <cstring>
+#include <cctype>
 #include <new>
 #include <exception>
 
@@ -85,14 +85,14 @@ namespace str
 	 * Função safe para substituir o strncpy.
 	 * Fiz ela para ficar mais simples e intuitívo de se gerir.
 	 * @dest_size = número de carateres máximo que será copiado para dentro de dest.
-	 * seráo copiados no máximo dest_size-1. sempre ao final coloca o characater '\n'
+	 * seráo copiados no máximo dest_size-1. sempre ao final coloca o characater '\0'
 	 * se o dest_size for 1 -> coloca somente o character '\0'.
 	 * @n = número efetivo de characteres que serão copiados de src.
 	 * pode-se usar assim n = strlen(src).
 	 * @obs: diferentemente de dest_size, n copia o número exato de characteres de n,
-	 * caso não encontre antes o character '\n'.
-	 * @obs2: caso o character '\n' for encontrado antes de se alcançar o valor de dest_size ou n,
-	 * a cópia para, insere o valor de '\n' e retorna.
+	 * caso não encontre antes o character '\0'.
+	 * @obs2: caso o character '\0' for encontrado antes de se alcançar o
+	 * menor valor entre dest_size ou n, a cópia para, insere o valor de '\0' e retorna.
 	 * @return: retorna o número de characteres efetivamente copiados.
 	 */
 	extern int cpy(
@@ -100,6 +100,27 @@ namespace str
 		const int dest_size,
 		const char *src,
 		const int n = -1);
+	
+	/**
+	 * Funciona como a função isalnum.
+	 * A diferença, é que se pode passar também uma sequência de characteres
+	 * que também poderá fazer parte da verificação.
+	 * @seq = sequência de characteres que será verificada.
+	 * if @seq is nullptr return false.
+	 * @str = string que contém os characteres adicionais que serão utilizados para
+	 * checar @seq. -> exemplo de @str = " _\n" -> neste caso além da verficação
+	 * pela função isalnum() também verifica se cada character pode ser ' ' ou '_' ou '\n'
+	 * if @str = nullptr, @str is ignored.
+	 * @seq_len = número máximo de characteres que será verificado em seq.
+	 * se o valor de @seq_len for <= 0 -> verifica a string completa: seq_len = strlen(seq)
+	 * @return: false se algum dos characteres de @seq for diferente de isalnum() ou de algum
+	 * dos characteres de @str.
+	 * true: otherwise
+	 */
+	extern bool is_ans(
+		const char *seq, 
+		const char *str = "", 
+		const int  seq_len = 0);
 }
 
 // syntatic sugar to throw error or warning - see the end of this file
