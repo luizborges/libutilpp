@@ -10,3 +10,12 @@ int u::strncmp(
 	if(n < 1) throw err("n < 1 | n = %d", n);
 	return std::strncmp(str1, str2, n);
 }
+
+size_t u::strlen(const char *str)
+{
+	if(str == nullptr) throw err("str is nullptr");
+	return std::strlen(str);
+}
+
+
+
