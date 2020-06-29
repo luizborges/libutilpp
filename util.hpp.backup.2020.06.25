@@ -124,7 +124,7 @@ namespace str
 }
 
 // syntatic sugar to throw error or warning - see the end of this file
-class error : public std::exception
+class error
 {public:
 	static error& msg(const int line = -1,
 					const int line_call_me = -1,
@@ -153,9 +153,6 @@ class error : public std::exception
 	 * por default ele já é xibido, então não existe necessidade utilizar está função
 	 */
 	static void set_header(bool header = true);
-	
-	// possibilitar a compatibilidade com a std::exception
-	virtual const char* what() const noexcept{ return "u::error";}
  private:
 	static char ErrorInfo[1024];
 	static char ErrorMsg[4096];
