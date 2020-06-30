@@ -182,7 +182,15 @@ int u::remove(const char *filename)
 	return r;
 }
 
-
+FILE* u::tmpfile(void)
+{
+	FILE *tmp = std::tmpfile();
+	if(tmp == nullptr) {
+		throw err("error in create temporary file.\n"
+		"erro is %d\nstr erro is \"%s\"", errno, strerror(errno));
+	}
+	return tmp;
+}
 
 
 

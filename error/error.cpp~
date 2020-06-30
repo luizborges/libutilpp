@@ -5,6 +5,8 @@ int u::line = -1; // iniciatlization
 bool u::error::header = true; // initializing
 char u::error::ErrorInfo[];
 char u::error::ErrorMsg[];
+bool u::error::has_trace = false;
+FILE* u::error::trace = nullptr;
 static u::error _error;
 
 u::error&
@@ -23,6 +25,7 @@ u::error::msg(
   // se a string resultante for maior que o size of string o restante que é maior será descartado
 	if(line_call_me < 0) {
 		snprintf(ErrorInfo, 1024, "\"%s\" (%d, \"%s\")", func, line, file);
+			
 	} else {
 		snprintf(ErrorInfo, 1024, "[[%d]] \"%s\" (%d, \"%s\")", 
 			line_call_me, func, line, file);
@@ -42,9 +45,11 @@ u::error::msg(
 	
 	if(check_args == nullptr) { //va_list msgUserArgs is empty
 		fprintf(stderr, "%s\n", ErrorInfo);
+		if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 	}
 	else if(strcmp(check_args, "") == 0) { // va_list msgUserArgs is empty -> by macro
 		fprintf(stderr, "%s\n", ErrorInfo);
+		if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 	}
 	else
 	{
@@ -56,11 +61,13 @@ u::error::msg(
 	
 		if(strlen(ErrorMsg) < 1) {
 			fprintf(stderr, "%s\n", ErrorInfo);
+			if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 		} else {
 			fprintf(stderr, "%s\n%s\n", ErrorMsg, ErrorInfo);
+			if(has_trace) fprintf(trace, "%s\n%s<br/>", ErrorMsg, ErrorInfo);
 		}
 		va_end(msgUserArgs);
-  	}
+  }
   	
 	return _error;
 }
@@ -89,6 +96,19 @@ u::error::show_header(const char *type)
 	}
 	fprintf(stderr, "*************************************\n");
 	fprintf(stderr, "TIME %s: %s", type, strTimer);
+	
+	if(has_trace)
+	{
+		fprintf(trace, "<br/>");
+		fprintf(trace, "*************************************<br/>");
+		if(strcmp(type, "WARNING") == 0) {
+			fprintf(trace, "***********  WARNING MSG  ***********<br/>");
+		} else {
+			fprintf(trace, "************  %s MSG  ************<br/>", type);
+		}
+		fprintf(trace, "*************************************<br/>");
+		fprintf(trace, "TIME %s: %s<br/>", type, strTimer);
+	}
 }
 
 u::error&
@@ -128,9 +148,11 @@ u::error::msgv(
 	
 	if(msg_va == nullptr) { //va_list msgUserArgs is empty
 		fprintf(stderr, "%s\n%s\n", msg, ErrorInfo);
+		if(has_trace) fprintf(trace, "%s\n%s<br/>", msg, ErrorInfo);
 	}
 	else if(strcmp(msg_va, "") == 0) { // va_list msgUserArgs is empty -> by macro
 		fprintf(stderr, "%s\n%s\n", msg, ErrorInfo);
+		if(has_trace) fprintf(trace, "%s\n%s<br/>", msg, ErrorInfo);
 	}
 	else
 	{
@@ -138,8 +160,10 @@ u::error::msgv(
 	
 		if(strlen(ErrorMsg) < 1) {
 			fprintf(stderr, "%s\n%s\n", msg, ErrorInfo);
+			if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 		} else {
 			fprintf(stderr, "%s\n%s\n%s\n", msg, ErrorMsg, ErrorInfo);
+			if(has_trace) fprintf(trace, "%s<br/>%s\n%s<br/>", msg, ErrorMsg, ErrorInfo);
 		}
 		va_end(arg);
   	}
@@ -147,9 +171,30 @@ u::error::msgv(
 	return _error;
 }
 
+void
+u::error::set_trace(bool trace)
+{
+	if(trace == false)
+	{
+		has_trace = false;
+		return;
+	}
+	// não faz nada pois caso contrário poderia resetar e perder
+	// todo o conetúdo que já foi gravado
+	if(has_trace) return;
+	
+	has_trace = true;
+	u::error::trace = u::tmpfile();
+}
 
-
-
+char*
+u::error::get_trace(void)
+{
+	if(trace == nullptr) return nullptr;
+	
+	std::rewind(trace);
+	return u::file::toStr(trace);
+}
 
 
 
