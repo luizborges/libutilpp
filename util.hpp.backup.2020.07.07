@@ -22,11 +22,6 @@
 #include <cctype>
 #include <new>
 #include <exception>
-#include <string>
-#include <memory>
-#include <iostream>
-#include <map>
-#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Includes - system dependent libraries

@@ -1,0 +1,195 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+#include <time.h>
+#include <errno.h>
+#include <stdarg.h>
+
+#include <cstdio>
+#include <cstring>
+#include <cctype>
+#include <new>
+#include <exception>
+#include <string>
+#include <memory>
+#include <iostream>
+#include <map>
+#include <vector>
+
+/**
+ * esta classe é criada para uniformizar a troca de dados entre as diversas classes e serviços.
+ * por exemplo: com esta classe a ideia é de não necessitar de criar mais de uma classe para realizar
+ * um mapeamento relacional das classes e das tabelas do banco de dados e ao mesmo tempo
+ * poder gravar a classe recebida na sessão.
+ * ou seja, com esta classe, poderá se ter biblitecas independências, que conseguem se comunicar.
+ * a ideia é que no futuro, possa ser uma classe recursiva ( ou seja, possa haver um mapeamento de
+ * outras unify, dentro de uma mesma unify, para uma classe poder conter outra classe dentro dela).
+ * inicialmente escolhi o modo mais simples, embora tenha feito esboços diversos, porém, para simplificar
+ * e testar inicialmente, resolvi optar pelo mais simples inicialmente, que acredito resolverá boa parte dos
+ * problemas.
+ */
+struct unify {
+    std::string name;
+    std::map<std::string, std::string> str;
+    std::map<std::string, unify> son;
+    std::string nostr = "";
+    
+    virtual std::string& get(const std::string& key) {
+        const auto& e = str.find(key);
+        if(e == str.end())  { //  não existe a chave
+            if(nostr != "") nostr = ""; // sempre reseta a nostr
+            return nostr; // caso não tenha encontrado
+        }
+        return e->second;
+    }
+    virtual std::string set(const std::string& key, const std::string& val) {
+        const auto& e = str.find(key);
+        if(e == str.end())  { // não existe a chave
+            str[key] = val;
+            return "";
+        } else {
+            std::string old_val = e->second;
+            e->second = val;
+            return old_val;
+        }
+    }
+    virtual std::string& operator[](const std::string& key) {
+        const auto& e = str.find(key);
+        if(e == str.end())  { //  não existe a chave
+            str[key] = ""; // cria uma chave vazia
+            return str[key];
+        }
+        return e->second;
+    }
+    virtual void key() { // função de teste
+        for(auto const& e : str) {
+            std::cout << "key: " << e.first << " | val: " << e.second << "\n";
+        }
+    }
+    
+    virtual unify& getu(const std::string& key) {
+        const auto& e = son.find(key);
+        if(e == son.end())  { // não existe a chave
+            throw "error - no find user"; // mudar isso
+        }
+        return e->second;
+    }
+    virtual unify set(const std::string& key, const unify& val) {
+        const auto& e = son.find(key);
+        if(e == son.end())  { // não existe a chave
+            son.insert(std::pair<std::string, unify>(key, val));
+            return val;
+        }
+        unify old_val = e->second;
+        son.erase(key); // necessário devido ao overloading do operator[]
+        son.insert(std::pair<std::string, unify>(key, val));
+        return old_val;
+    }
+    
+    
+};
+
+/**
+ * esta classe será usuada para realizar o mapeamento entre uma tabela e uma classe
+ * one significa que o mapeamento é de um para um, ou seja, realiza o mapeamento de apenas uma única
+ * tabela.
+ */
+struct one : unify {
+    std::vector<std::string> column;
+    std::string& table = unify::name;
+    
+    one(std::vector<std::string> _column) {
+        column = _column;
+        init();
+    }
+    one() {}
+    
+    virtual void init() {
+        for(auto const& e: column)
+            unify::str[e] = "";
+    }
+};
+
+/**
+ *  esta classe seria a representação de uma tabela no banco de dados.
+ * como a classe mapaeia uma única tabela, ela herdaria da classe one.
+ * a ideia é que com este mapeamento, o banco de dados seja abstraído.
+ */
+struct users : one {
+ /**
+ * pode-se inicializar das duas formas abaixo.
+ * eu mostro as duas formas, porém, acredito que a segunda seja mais legível.
+ * por isso escolhi a segunda e deixei ela como descomentada.
+ */
+ /*  users() :
+    one({"id", "email", "passwd"}) {
+      one::table = "users";
+  }
+  */
+  users() {
+      one::table = "users";
+      one::column = {"id", "email", "passwd"};
+      one::init();
+  }
+};
+
+
+
+int main()
+{
+    unify u;
+    one o;
+    users s;
+    std::cout << "users name is " << s.name << "\n";
+    s["id"] = "fixusa";
+    std::cout << "[id]: " << s["id"] << "\n";
+    s["id"] = "marcelo";
+    std::cout << "[id]: " << s["id"] << "\n";
+    s["email"] = "luizb@m.com";
+    std::cout << "[id]: " << s["id"] << "\n";
+    std::cout << "[email]: " << s["email"] << "\n";
+    std::cout << "[passwd]: " << s["passwd"] << "\n";
+    s["new"] = "++";
+    std::cout << "[new]: " << s["new"] << "\n";
+    s["x"] = std::to_string(3);
+    std::cout << "[x]: " << s["x"] << "\n";
+    const char ch[23] = "uper test++";
+    s["y"] = ch;
+    std::cout << "[y]: " << s["y"] << "\n";
+    std::pair<std::string, std::string> p;
+    p.first = "up";
+    std::cout << "p.first: " << p.first << "\n";
+    
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
