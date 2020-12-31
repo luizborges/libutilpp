@@ -65,6 +65,7 @@ ARG5       = #-e str_end_block.dat
 glib: cscrean clean_glib linker_lib export_glib_header export_glib 
 	$(info $nDynamic Library created with success: $(LIB) $nDynamic Library Header exported with success: $(C_LIB_H)$nFramework Library exported with success.$nTo use Framework CWEB: #include <$(C_LIB_H)>)
 # can use to print: $(info your_text) $(warning your_text) or $(error your_text) # for new/break line use: $nYour_text - ex: my_text_line1 $nmy_text_line2
+
 # use this option to create a local library.
 # with this option you will must add the following options to use the library:
 # compile timer:
