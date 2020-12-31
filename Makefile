@@ -7,7 +7,7 @@ DLIB_DIR_RPATH  = $(foreach dir,$(DLIB_DIR),   -Wl,-rpath=$(dir)) # add prefix t
 DLIB_NAME       = #-lerror -lstackTracer# insert here all dynamics libraries in DLIB_DIR_H you want to use
 # old -lclientOutput_strMap -lroute_easy -lclientInput_manager -lcookie_manager
 # OLD -LIBCOMMON = -lerror -lmemoryManager -lstackTracer -lfileUtil -larrayList_noSync -lmap_ArrayList_noSync -labstractFactoryCommon
-CFLAGS          = -Wall -g -O3 -DNDEBUG -Wno-variadic-macros -fPIC -Wl,--export-dynamic # Werror transforms warning in error
+CFLAGS          = -Wall -g -Ofast -DNDEBUG -Wno-variadic-macros -fPIC -Wl,--export-dynamic # Werror transforms warning in error
 DLIB_STD        = -lm -lpthread #-lfcgi -lgc
 DLIB            = $(DLIB_STD) $(DLIB_NAME)
 COMPILER_FLAGS  = $(CFLAGS) #$(DLIB_DIR_LPATH) $(DLIB_DIR_H_IPATH) use $(DLIB_DIR_LPATH) $(DLIB_DIR_H_IPATH) when the library is not in global environment
@@ -21,19 +21,20 @@ DLIB_DIR_GLOBAL   = /usr/local/lib
 ################################################
 # INCLUDE LIBRARIES OF THE LIBRARY
 ################################################
-FILE             = file/file.cpp
-ERROR            = error/error.cpp
-LIBC_STDIO       = libc/stdio.cpp
-LIBC_STDLIB      = libc/stdlib.cpp
-LIBC_STRING      = libc/string.cpp
-STR		  = str/str.cpp
+FILE        = file/file.cpp
+ERROR       = error/error.cpp
+LIBC_STDIO  = libc/stdio.cpp
+LIBC_STDLIB = libc/stdlib.cpp
+LIBC_STRING = libc/string.cpp
+STR			= str/str.cpp
+GLOBAL		= global/global.cpp
 ################################################
 # END
 ################################################
 
 C_SRC_LIB       = 
 C_SRC_MAIN      = 
-C_SRC           = $(FILE) $(ERROR) $(LIBC_STDIO) $(LIBC_STDLIB) $(LIBC_STRING) $(STR)
+C_SRC           = $(FILE) $(ERROR) $(LIBC_STDIO) $(LIBC_STDLIB) $(LIBC_STRING) $(STR) $(GLOBAL)
 C_OBJ_ORI       = $(C_SRC:.cpp=.o)
 C_SRC_NAME_ONLY = $(notdir $(C_SRC))
 C_OBJ_NAME_ONLY = $(C_SRC_NAME_ONLY:.cpp=.o)
@@ -94,10 +95,10 @@ linker: cscrean clean add_c_src_main $(C_SRC:.cpp=.o) $(C_SRC_MAIN:.cpp=.o) mv_c
 $(C_SRC:.cpp=.o): %.o : %.cpp
 	$(info $ncompile: $<)
 	$(CC) $(COMPILER_FLAGS) -c $< -o $@ $(DLIB)
-	$(info $n)
+
 
 $(C_SRC_MAIN:.cpp=.o): %.o : %.cpp
-	$(info $ncompile: $<)
+	$(info compile: $<)
 	$(CC) $(COMPILER_FLAGS) -c $< -o $@ $(DLIB)
 	
 export_lib:
@@ -119,6 +120,7 @@ export_glib:
 
 
 mv_c_obj: 
+	$(info $nmoving files to obj_dir)
 	mv $(C_OBJ_ORI) $(C_OBJ_DIR)
 
 # only in C_SRC variable is necessary to concatenate whit C_SRC_MAIN, all others just loading them again

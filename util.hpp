@@ -210,6 +210,19 @@ class error : public std::exception
 	#error "macro _ is already defined."
 	#endif
 	////////////////////////////////////////////////////////////////////////////////
+	// functions in global.cpp
+	////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * this function is equivalent to sprintf(), but receiving and returning a string
+	 * this function is safe - check the inner size, and free all buffer.
+	 * @source: the code funciton was copy from this site:
+	 * question: I have to format std::string with sprintf and send it into file stream. How can I do this?
+	 * code: https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
+	 */
+	template<typename ... Args>
+	std::string format(const std::string& sformat, Args ... args);
+	
+	////////////////////////////////////////////////////////////////////////////////
 	// encapsulate the c functions
 	////////////////////////////////////////////////////////////////////////////////
 	// use this function to let the user insert a error msg in the function
@@ -312,6 +325,22 @@ class error : public std::exception
 	u::error::msg(__LINE__, LINE, "WARNING", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif // 
 #endif // else -> compiler option
+
+////////////////////////////////////////////////////////////////////////////////
+// functions in global.cpp
+////////////////////////////////////////////////////////////////////////////////
+template<typename ... Args>
+std::string u::format(const std::string& sformat, Args ... args)
+{ try {
+	int size = std::snprintf( nullptr, 0, sformat.c_str(), args ... ) + 1; // Extra space for '\0'
+    if( size <= 0 ){ throw err("Error during formatting.\nstr: \"%s\"", sformat.c_str()); }
+    std::unique_ptr<char[]> buf( new char[ size ] ); 
+    std::snprintf( buf.get(), size, sformat.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
