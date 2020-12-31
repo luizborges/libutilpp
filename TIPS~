@@ -1,7 +1,0 @@
->> DICAS UTEIS PARA MELHORAR DESEMPENHO
-
->> sempre no retorno de uma query do sql, inserir o cast para ::TEXT or ::VARCHAR.
-exemplo: SELECT CURRENT_TIMESTAMP::TEXT;
-originalmente CURRENT_TIMESTAMP é do tipo timestamp, que será convertido para string.
-isso é importante, pois internamente da classe obj, todos os tipos são lidos como string, o que economiza tempo.
-
