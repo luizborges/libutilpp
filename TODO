@@ -1,6 +1,14 @@
 
+> 
+
+> fazer funções auxiliares de tratamento de string - trim(), ltrim(), rtrim() - entre outras
+
+> refatorar a classe error para aceitar string e não somente char*
 
 > implementar a biblioteca do stackTracer.h. - minha ideia é deixar ela dentro da classe u::error.
+
 > após implementar a biblioteca do stackTracer, fazer com que a função de emissão do log do stacktracer seja emitida também para a saída 'stdout' e formatar isso com saída própria para html, igual eu fiz com as saídas que das exceptions.
 > unificar a chamada que inicia o stackTracer e a que fala para gravar o log para saída em 'stdout'. StackTracer_Init() e u::error::set_trace().
+
+
 

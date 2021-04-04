@@ -193,7 +193,12 @@ u::error::get_trace(void)
 	if(trace == nullptr) return nullptr;
 	
 	std::rewind(trace);
-	return u::file::toStr(trace);
+	char *trace = (char*)"";
+	try {
+		trace = u::file::toStr(trace);
+	} catch(std::exception const& e) { trace = (char*)"TRACE IS EMPTY."; }
+	
+	return trace;
 }
 
 

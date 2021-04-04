@@ -211,7 +211,7 @@ class error : public std::exception
 	#endif
 	////////////////////////////////////////////////////////////////////////////////
 	// functions in global.cpp
-	////////////////////////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * this function is equivalent to sprintf(), but receiving and returning a string
 	 * this function is safe - check the inner size, and free all buffer.
@@ -220,85 +220,7 @@ class error : public std::exception
 	 * code: https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	 */
 	template<typename ... Args>
-	std::string sprintf(const std::string& sformat, Args ... args);
-	
-	////////////////////////////////////////////////////////////////////////////////
-	// string functions - in file:: str/str_global.cpp
-	////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * if the character is not std::graph() == 0 -> remove it from the string
-	 * if its positions is in the begging or in the end of string.
-	 * trim() = rtrim() + ltrim()
-	 * @arg str: string que será modificada pelas funções trim || rtrim || ltrim || tolower || toupper
-	 * @return: return str; str is the argument string. - copy of string in argument
-	 */
-	std::string  trim(std::string& str);
-	std::string rtrim(std::string& str);
-	std::string ltrim(std::string& str);
-	
-	std::string tolower(std::string& str); // the same name of function in <cctype>
-	std::string toupper(std::string& str); // the same name of function in <cctype>
-	
-	/**
-	 * Verifica se todos os characters of string são válidos pela função correspondente de mesmo nome da biblioteca cctype
-	 * @arg throw_expection: se for true = lança uma exceção caso algum character não seja compatível.
-	 * false => não lança uma exceção, e retorna o valor false.
-	 * @obs: se o valor throw_expection = true -> então está função somente retorna true, pois em caso de false ela 
-	 * lança uma execeção.
-	 */
-	bool isalnum(const std::string& str, const bool throw_expection = true); // the same name of function in <cctype>
-	bool isalpha(const std::string& str, const bool throw_expection = true); // the same name of function in <cctype>
-	bool isdigit(const std::string& str, const bool throw_expection = true); // the same name of function in <cctype>
-	
-	/**
-	 * Funções para verificação de strings.
-	 * the same name of function in <cctype>
-	 * A escolha de utilizar o mesmo nome de cima é por legibilidade do código e também para deixar o código menor.
-	 * @arg str: string que será analisada.
-	 * @arg max_size: tamanho máximo que a string str pode ter. max_size = -1 -> não verifica o tamanho máximo
-	 * @arg min_size: tamanho mínimo que a string str pode ter. min_size = 0 -> a string can be empty.
-	 * @arg others: contém outros characteres permitidos para a string str
-	 * @arg throw_expection: se for true = lança uma exceção caso algum character não seja compatível.
-	 * false => não lança uma exceção, e retorna o valor false.
-	 * @obs: se o valor throw_expection = true -> então está função somente retorna true, pois em caso de false ela 
-	 * lança uma execeção.
-	 */
-	bool isalnum(const std::string& str, const long max_size = -1,
-		const long min_size = 0, const std::string& others = "", 
-		const bool throw_expection = true);
-	bool isalpha(const std::string& str, const long max_size = -1,
-		const long min_size = 0, const std::string& others = "", 
-		const bool throw_expection = true);
-	bool isdigit(const std::string& str, const long max_size = -1,
-		const long min_size = 0, const std::string& others = "", 
-		const bool throw_expection = true);
-	
-	////////////////////////////////////////////////////////////////////////////////
-	// string functions
-	////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * transform the char* str into a string.
-	 * it is useful for check: str = nullptr then the result is ""
-	 * str == nullptr ? "" : str;
-	 */
-	inline std::string to_str(const char *str);
-	/**
-	 * transform the bool into a string.
-	 * return b == false ? "false" : "true";
-	 */
-	inline std::string to_str(const bool b);
-	
-	////////////////////////////////////////////////////////////////////////////////
-	// functions of std::variant<>
-	////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * functions to facility the use of STL in cpp
-	 */
-	#define U_VARIANT_TYPES std::monostate, std::string, char, int, long, long long, \
-	unsigned char, unsigned int, unsigned long, unsigned long long, float, double, long double
-	
-	#define U_ENUM_TYPES NO_TYPE, STR, CHAR, INT, LONG, LONG_LONG, UCHAR, UINT, ULONG, ULONG_LONG,\
-		FLOAT, DOUBLE, LONG_DOUBLE
+	std::string format(const std::string& sformat, Args ... args);
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// functions in STL_easy.cpp
@@ -371,7 +293,7 @@ class error : public std::exception
    u::error::msg(__LINE__, LINE, "WARNING", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
 #endif
 
-#elif defined(_MSC_VER) // compilador da microsoft
+#elif defined(_MSC_VER) // compilaor da microsoft
 #ifndef err
 #define err(...) \
 	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
@@ -415,31 +337,21 @@ class error : public std::exception
 #endif // else -> compiler option
 
 ////////////////////////////////////////////////////////////////////////////////
-// functions
+// functions in global.cpp
 ////////////////////////////////////////////////////////////////////////////////
 template<typename ... Args>
-std::string u::sprintf(const std::string& sformat, Args ... args)
+std::string u::format(const std::string& sformat, Args ... args)
 { try {
 	int size = std::snprintf( nullptr, 0, sformat.c_str(), args ... ) + 1; // Extra space for '\0'
     if( size <= 0 ){ throw err("Error during formatting.\nstr: \"%s\"", sformat.c_str()); }
-    std::unique_ptr<char[]> buf = std::make_unique<char[]>(size); 
+    std::unique_ptr<char[]> buf( new char[ size ] ); 
     std::snprintf( buf.get(), size, sformat.c_str(), args ... );
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// string functions
-////////////////////////////////////////////////////////////////////////////////
-inline std::string
-u::to_str(const char *str) {
-	return str == nullptr ? "" : str;
-}
 
-inline std::string
-u::to_str(const bool b) {
-	return b == false ? "false" : "true";
-}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // implentation of C function

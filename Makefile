@@ -26,7 +26,7 @@ ERROR       = error/error.cpp
 LIBC_STDIO  = libc/stdio.cpp
 LIBC_STDLIB = libc/stdlib.cpp
 LIBC_STRING = libc/string.cpp
-STR			= str/str.cpp
+STR			= str/str.cpp str/str_global.cpp
 GLOBAL		= global/global.cpp
 ################################################
 # END

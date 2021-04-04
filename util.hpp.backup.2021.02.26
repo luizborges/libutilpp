@@ -294,11 +294,8 @@ class error : public std::exception
 	/**
 	 * functions to facility the use of STL in cpp
 	 */
-	#define U_VARIANT_TYPES std::monostate, std::string, char, int, long, long long, \
-	unsigned char, unsigned int, unsigned long, unsigned long long, float, double, long double
-	
-	#define U_ENUM_TYPES NO_TYPE, STR, CHAR, INT, LONG, LONG_LONG, UCHAR, UINT, ULONG, ULONG_LONG,\
-		FLOAT, DOUBLE, LONG_DOUBLE
+	//template<class T>
+	//print_keys
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// functions in STL_easy.cpp

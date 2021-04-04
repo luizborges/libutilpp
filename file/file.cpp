@@ -12,9 +12,8 @@
 
 char*
 u::file::getLine(FILE *file)
-{
- int lineSize = -1;
- try {
+{ try {
+ 	int lineSize = -1;
 	fpos_t pos;
     int i;
     char *line;
@@ -40,18 +39,14 @@ u::file::getLine(FILE *file)
     line[i] = '\0'; // seta o caractere de final de linha
     
     return line;
- } catch(u::error& e) {throw err();}
- catch(std::bad_alloc& e) {
- 	throw err("std::bad_alloc - Trying allocated: %d", lineSize +2);
- }
+ } catch(std::exception const& e) { throw err(e.what()); }
 }
 
 
 char*
 u::file::toStr(const char *file_name)
-{
-	long sizeFile = -1L;
- try {
+{ try {
+ 	long sizeFile = -1L;
 	FILE *file_ = u::fopen(file_name, "r");
 	/////////////////////////////////////////////////////////////////////////////////
 	// descobre o número de bytes para o fim do arquivo
@@ -78,18 +73,14 @@ u::file::toStr(const char *file_name)
 	u::fclose(file_); // fecha o arquivo
 
 	return str;
- } catch(u::error& e) { throw err(); }
- catch(std::bad_alloc& e) {
- 	throw err("std::bad_alloc - Trying allocated: %d", sizeFile);
- }
+ } catch(std::exception const& e) { throw err(e.what()); }
 }
 
 
 char*
 u::file::toStr(FILE *file_)
-{
-	long sizeFile = -1L;
- try {
+{ try {
+ 	long sizeFile = -1L;
 	/////////////////////////////////////////////////////////////////////////////////
 	// descobre o número de bytes para o fim do arquivo
 	/////////////////////////////////////////////////////////////////////////////////
@@ -115,9 +106,6 @@ u::file::toStr(FILE *file_)
 	u::fclose(file_); // fecha o arquivo
 
 	return str;
- } catch(u::error& e) { throw err(); }
- catch(std::bad_alloc& e) {
- 	throw err("std::bad_alloc - Trying allocated: %d", sizeFile);
- }
+ } catch(std::exception const& e) { throw err(e.what()); }
 }
 
