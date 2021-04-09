@@ -6,7 +6,7 @@ bool u::error::header = true; // initializing
 char u::error::ErrorInfo[];
 char u::error::ErrorMsg[];
 bool u::error::has_trace = false;
-std::string u::error::trace_str = "";
+FILE* u::error::trace = nullptr;
 static u::error _error;
 
 u::error&
@@ -45,11 +45,11 @@ u::error::msg(
 	
 	if(check_args == nullptr) { //va_list msgUserArgs is empty
 		fprintf(stderr, "%s\n", ErrorInfo);
-		if(has_trace) trace_str += u::to_str(ErrorInfo) + "<br>";
+		if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 	}
 	else if(strcmp(check_args, "") == 0) { // va_list msgUserArgs is empty -> by macro
 		fprintf(stderr, "%s\n", ErrorInfo);
-		if(has_trace) trace_str += u::to_str(ErrorInfo) + "<br>";
+		if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 	}
 	else
 	{
@@ -61,10 +61,10 @@ u::error::msg(
 	
 		if(strlen(ErrorMsg) < 1) {
 			fprintf(stderr, "%s\n", ErrorInfo);
-			if(has_trace) trace_str += u::to_str(ErrorInfo) + "<br>";
+			if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 		} else {
 			fprintf(stderr, "%s\n%s\n", ErrorMsg, ErrorInfo);
-			if(has_trace) trace_str +="<b>"+u::to_str(ErrorMsg)+"</b><br>"+ u::to_str(ErrorInfo) + "<br>";
+			if(has_trace) fprintf(trace, "%s\n%s<br/>", ErrorMsg, ErrorInfo);
 		}
 		va_end(msgUserArgs);
   }
@@ -99,15 +99,15 @@ u::error::show_header(const char *type)
 	
 	if(has_trace)
 	{
-        trace_str += "<br/>";
-		trace_str += "*************************************<br/>";
+		fprintf(trace, "<br/>");
+		fprintf(trace, "*************************************<br/>");
 		if(strcmp(type, "WARNING") == 0) {
-			trace_str += "***********  WARNING MSG  ***********<br/>";
+			fprintf(trace, "***********  WARNING MSG  ***********<br/>");
 		} else {
-			trace_str += "************  "+u::to_str(type)+" MSG  ************<br/>";
+			fprintf(trace, "************  %s MSG  ************<br/>", type);
 		}
-		trace_str +=  "*************************************<br/>";
-		trace_str += "TIME "+u::to_str(type)+": "+u::to_str(strTimer)+"<br/>";
+		fprintf(trace, "*************************************<br/>");
+		fprintf(trace, "TIME %s: %s<br/>", type, strTimer);
 	}
 }
 
@@ -148,11 +148,11 @@ u::error::msgv(
 	
 	if(msg_va == nullptr) { //va_list msgUserArgs is empty
 		fprintf(stderr, "%s\n%s\n", msg, ErrorInfo);
-		if(has_trace) trace_str += u::to_str(ErrorInfo) + "<br>";
+		if(has_trace) fprintf(trace, "%s\n%s<br/>", msg, ErrorInfo);
 	}
 	else if(strcmp(msg_va, "") == 0) { // va_list msgUserArgs is empty -> by macro
 		fprintf(stderr, "%s\n%s\n", msg, ErrorInfo);
-		if(has_trace) trace_str += u::to_str(ErrorInfo) + "<br>";
+		if(has_trace) fprintf(trace, "%s\n%s<br/>", msg, ErrorInfo);
 	}
 	else
 	{
@@ -160,10 +160,10 @@ u::error::msgv(
 	
 		if(strlen(ErrorMsg) < 1) {
 			fprintf(stderr, "%s\n%s\n", msg, ErrorInfo);
-			if(has_trace) trace_str += u::to_str(ErrorInfo) + "<br>";
+			if(has_trace) fprintf(trace, "%s<br/>", ErrorInfo);
 		} else {
 			fprintf(stderr, "%s\n%s\n%s\n", msg, ErrorMsg, ErrorInfo);
-			if(has_trace) trace_str +="<b>"+u::to_str(ErrorMsg)+"</b><br>"+ u::to_str(ErrorInfo) + "<br>";
+			if(has_trace) fprintf(trace, "%s<br/>%s\n%s<br/>", msg, ErrorMsg, ErrorInfo);
 		}
 		va_end(arg);
   	}
@@ -184,12 +184,21 @@ u::error::set_trace(bool trace)
 	if(has_trace) return;
 	
 	has_trace = true;
+	u::error::trace = u::tmpfile();
 }
 
 char*
 u::error::get_trace(void)
 {
-    return const_cast<char*>(trace_str.c_str());
+	if(trace == nullptr) return nullptr;
+	
+	std::rewind(trace);
+	char *trace = (char*)"";
+	try {
+		trace = u::file::toStr(trace);
+	} catch(std::exception const& e) { trace = (char*)"TRACE IS EMPTY."; }
+	
+	return trace;
 }
 
 

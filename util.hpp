@@ -177,7 +177,8 @@ class error : public std::exception
 	 static char* get_trace(void);
 	
 	// possibilitar a compatibilidade com a std::exception
-	virtual const char* what() const noexcept{ return "u::error";}
+	//virtual const char* what() const noexcept{ return "u::error";}
+	virtual const char* what() const noexcept{ return "";}
  private:
 	static char ErrorInfo[1024];
 	static char ErrorMsg[4096];
@@ -186,6 +187,7 @@ class error : public std::exception
 	
 	static bool has_trace;
 	static FILE *trace;
+    static std::string trace_str;
 };
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -226,18 +228,21 @@ class error : public std::exception
 	// string functions - in file:: str/str_global.cpp
 	////////////////////////////////////////////////////////////////////////////////
 	/**
-	 * if the character is not std::graph() == 0 -> remove it from the string
+	 * if the character is not std::graph() == 0 -> remove it from the string if
 	 * if its positions is in the begging or in the end of string.
 	 * trim() = rtrim() + ltrim()
-	 * @arg str: string que será modificada pelas funções trim || rtrim || ltrim || tolower || toupper
+	 * @arg str: string que NÃO será modificada pelas funções trim || rtrim || ltrim || tolower || toupper
 	 * @return: return str; str is the argument string. - copy of string in argument
+	 * @obs: embora seja mais lento, não modificar a string, dá uma maior flexibilidade, para certos casos,
+	 * como as strings tendem a ser pequenas, a diferença na performance não é significativa, em vista
+	 * do ganho de legibilidade, segurança e flexbilidade que o código ganha.
 	 */
-	std::string  trim(std::string& str);
-	std::string rtrim(std::string& str);
-	std::string ltrim(std::string& str);
+	std::string  trim(const std::string& str);
+	std::string rtrim(const std::string& str);
+	std::string ltrim(const std::string& str);
 	
-	std::string tolower(std::string& str); // the same name of function in <cctype>
-	std::string toupper(std::string& str); // the same name of function in <cctype>
+	std::string tolower(const std::string& str); // the same name of function in <cctype>
+	std::string toupper(const std::string& str); // the same name of function in <cctype>
 	
 	/**
 	 * Verifica se todos os characters of string são válidos pela função correspondente de mesmo nome da biblioteca cctype

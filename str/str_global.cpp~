@@ -2,46 +2,56 @@
 
 
 std::string
-u::trim(std::string& str)
+u::trim(const std::string& str_ori)
 { try {
-	u::rtrim(str);
-	u::ltrim(str);
+	if(str_ori.empty()) return "";
+	std::string str = ltrim(rtrim(str_ori));
 	return str;
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
 std::string
-u::rtrim(std::string& str)
+u::rtrim(const std::string& str_ori)
 {try {
-	if(str.empty()) return str;
-	if(std::isgraph(str.back())) return str; // não é espaço ou character similar
-	str.pop_back(); // remove the last character of a string
-	return u::rtrim(str);
+	if(str_ori.empty()) return "";
+	std::string str = str_ori;
+	while(!str.empty()) {
+		if(std::isgraph(str.back())) return str; // não é espaço ou character similar
+		str.pop_back(); // remove the last character of a string
+	}
+	return str;
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
 std::string
-u::ltrim(std::string& str)
+u::ltrim(const std::string& str_ori)
 {try {
-	if(str.empty()) return str;
-	if(std::isgraph(str.front())) return str; // não é espaço ou character similar
-	str.erase(0, 1);; // remove the first character of a string
-	return u::ltrim(str);
+	if(str_ori.empty()) return "";
+	std::string str = str_ori;
+	while(!str.empty()) {
+		if(std::isgraph(str.front())) return str; // não é espaço ou character similar
+		str.erase(0, 1);; // remove the first character of a string
+	}
+	return str;
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
 
 std::string
-u::tolower(std::string& str)
+u::tolower(const std::string& str_ori)
 {try {
+	if(str_ori.empty()) return "";
+	std::string str = str_ori;
 	for(auto& e : str) e = std::tolower(e);
 	return str;
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
 std::string
-u::toupper(std::string& str)
+u::toupper(const std::string& str_ori)
 {try {
+	if(str_ori.empty()) return "";
+	std::string str = str_ori;
 	for(auto& e : str) e = std::toupper(e);
 	return str;
  } catch (const std::exception &e) { throw err(e.what()); }
