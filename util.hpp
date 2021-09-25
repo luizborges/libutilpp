@@ -10,16 +10,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes - default libraries
 ////////////////////////////////////////////////////////////////////////////////
-#include <stdlib.h>
-#include <math.h>
-#include <stdbool.h>
-#include <time.h>
-#include <errno.h>
-#include <stdarg.h>
+// #include <stdbool.h>
+// #include <errno.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include <ctime>
+#include <cstdarg>
+#include <cmath>
 #include <new>
 #include <exception>
 #include <string>
@@ -65,7 +65,7 @@ namespace file
 
 
 	/**
-	 * Abre um arquivo ou trata de um arquivo já aberto e insere todo o seu contéudo em uma s	tring.
+	 * Abre um arquivo ou trata de um arquivo já aberto e insere todo o seu contéudo em uma string.
 	 * Ao final insere o character '\0'.
 	 * Ao final de todas as operações, o arquivo é fechado - fclose
 	 * O character EOF não é inserido no arranjo retornado.
@@ -130,7 +130,7 @@ namespace str
 
 // syntatic sugar to throw error or warning - see the end of this file
 class error : public std::exception
-{public:
+{ public:
 	static error& msg(const int line = -1,
 					const int line_call_me = -1,
 					const char *type = "",
@@ -169,16 +169,16 @@ class error : public std::exception
 	static void set_trace(bool trace = true);
 	
 	/**
-	 * @obs: ao invés de '\n' ao final de cada string, é retornado a sequência '<br/>'
+	 * @obs: ao invés de '\n' ao final de cada string, é retornado a sequência '<br>'
 	 * isto é feito pois o objetivo primário é a apresentação dos dados em tela
 	 * no formato html. 
-	 * @return Caso não haja trace retorna  nullptr
+	 * @return Caso não haja trace retorna uma string vazia ""
 	 */
-	 static char* get_trace(void);
+	 static std::string get_trace(void);
 	
 	// possibilitar a compatibilidade com a std::exception
 	//virtual const char* what() const noexcept{ return "u::error";}
-	virtual const char* what() const noexcept{ return "";}
+	virtual const char* what() const noexcept{ return ""; }
  private:
 	static char ErrorInfo[1024];
 	static char ErrorMsg[4096];
@@ -223,6 +223,52 @@ class error : public std::exception
 	 */
 	template<typename ... Args>
 	std::string sprintf(const std::string& sformat, Args ... args);
+	
+	/**
+	 * Verifica se a estrutura subset é um subconjunto da estrutura set.
+	 * @obs: exemplos de estruturas que funcionam: std::vector<>
+	 * As estruturas devem respeitar as seguintes operações para funcionarem: 
+	 * for(const auto& e : set); for(const auto& i : subset); if(e == i); set.size(); subset.size()
+	 * @arg set: estrutura que contém.
+	 * @arg subset: estrutura que é contida.
+	 * @arg equal: true -> as duas estruturas são iguais. | false: otherwise
+	 * @arg throw_expection: se for true = lança uma exceção caso algum character não seja compatível.
+	 * false => não lança uma exceção, e retorna o valor false.
+	 * @return: se o valor throw_expection = true -> então está função somente retorna true, pois em caso de false ela 
+	 * lança uma execeção.
+	 */
+	template<typename T, typename U>
+	bool check_contains(const T& set, const U& subset, const bool equal = false, const bool throw_expection = true);
+	
+	/**
+	 * As funções abaixo checam se um map ou estrutura similar, tem suas chaves respeitando os seguintes regras.
+	 * @obs: é esperado que as chaves do map sejam string.
+	 * @obs: a ordem que as chaves aparecem na estrutura não é levada em conta na verificação.
+	 * @arg map: estrutura do tipo map. -> deve respeitar as regras do std::map<std::string, X>.
+	 * As regras são: for(const auto& e : map); map.size(); seja E um elemento de map, logo a chave deve ser: E.first
+	 * @arg keys: contém as chaves que serão comparadas com as chaves do map
+	 * @arg throw_expection: se for true = lança uma exceção caso algum character não seja compatível.
+	 * false => não lança uma exceção, e retorna o valor false.
+	 * @return: se o valor throw_expection = true -> então está função somente retorna true, pois em caso de false ela 
+	 * lança uma execeção.
+	 */
+	/**
+	 * As chaves do map devem ser iguais, não necessariamente na mesma ordem, aos valores de keys.
+	 */
+	template<typename T>
+	bool map_check_key(const T& map, const std::vector<std::string>& keys, const bool throw_expection = true);
+	
+	/**
+	 * Os valores de keys devem ser igual ou um subconjunto das chaves de map.
+	 */
+	template<typename T>
+	bool map_check_key_has(const T& map, const std::vector<std::string>& keys, const bool throw_expection = true);
+	
+	/**
+	 * As chaves do map devem ser iguais ou um subconjunto aos valores de keys.
+	 */
+	template<typename T>
+	bool map_check_key_subset(const T& map, const std::vector<std::string>& keys, const bool throw_expection = true);
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// string functions - in file:: str/str_global.cpp
@@ -277,6 +323,16 @@ class error : public std::exception
 	bool isdigit(const std::string& str, const long max_size = -1,
 		const long min_size = 0, const std::string& others = "", 
 		const bool throw_expection = true);
+    
+    
+    /**
+     * Replace all ocurrences of to_search to to_replace in str.
+     * @arg str: string in that search will occur.
+     * @arg to_search: string to be search and replaced. If to_search is "" -> a str equal to str is returned.
+     * @arg to_replace: string that will replace the to_search string.
+     * @return a new string with replace. if no replace is done, the a new string equal the original string is returned.
+     */
+    std::string str_replace_all(const std::string& str, const std::string& to_search, const std::string& to_replace);
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// string functions
@@ -420,7 +476,7 @@ class error : public std::exception
 #endif // else -> compiler option
 
 ////////////////////////////////////////////////////////////////////////////////
-// functions
+// functions - global.cpp
 ////////////////////////////////////////////////////////////////////////////////
 template<typename ... Args>
 std::string u::sprintf(const std::string& sformat, Args ... args)
@@ -430,6 +486,124 @@ std::string u::sprintf(const std::string& sformat, Args ... args)
     std::unique_ptr<char[]> buf = std::make_unique<char[]>(size); 
     std::snprintf( buf.get(), size, sformat.c_str(), args ... );
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
+
+
+template<typename T, typename U>
+bool u::check_contains(const T& set, const U& subset,
+					   const bool equal, const bool throw_expection)
+{ try {
+	// check the size of set and subset
+	if(equal) { // para o caso de ambos serem iguais
+		if(set.size() != subset.size()) {
+			if(throw_expection) { throw err("Different size. set: %ld | subset: %ld", set.size(), subset.size()); }
+			else return false;
+		}
+	} else {
+		if(set.size() < subset.size()) {
+			if(throw_expection) { throw err("Set is less than his subset. Size:: set: %ld | subset: %ld", set.size(), subset.size()); }
+			else return false;
+		}
+	}
+	
+	for(const auto& e : subset) {
+		bool has = false;
+		for(const auto& i : set) {
+			if(e == i) {
+				has = true;
+				break;
+			}
+		}
+		if(!has) {
+			if(throw_expection) { throw err("Subset's element: \"%s\" is not in set", std::to_string(e).c_str()); }
+			else return false;
+		}
+	}
+	return true;
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
+
+
+
+template<typename T>
+bool u::map_check_key(const T& map,
+					  const std::vector<std::string>& keys,
+					  const bool throw_expection)
+{ try {
+	if(map.size() != keys.size()) {
+		if(throw_expection) { throw err("Map is not equal Check vector KEYS. Size: Map: %ld | Check vector KEYS: %ld", map.size(), keys.size()); }
+		else return false;
+	}
+	
+	for(const auto& [map_key, value] : map) {
+		bool has = false;
+		for(const auto& K : keys) {
+			if(map_key == K) {
+				has = true;
+				break;
+			}
+		}
+		if(!has) {
+			if(throw_expection) { throw err("Map key and check vector KEYS are not equal. Map key: \"%s\" not inside in check vector keys", map_key.c_str()); }
+			else return false;
+		}
+	}
+	return true;
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
+
+template<typename T>
+bool u::map_check_key_has(const T& map,
+						  const std::vector<std::string>& keys,
+						  const bool throw_expection)
+{ try {
+	if(map.size() < keys.size()) {
+		if(throw_expection) { throw err("Map is less than his subset check vector KEYS. Size: Map: %ld | Check vector KEYS: %ld", map.size(), keys.size()); }
+		else return false;
+	}
+	
+	for(const auto& K : keys) {
+		bool has = false;
+		for(const auto& [map_key, value] : map) {
+			if(map_key == K) {
+				has = true;
+				break;
+			}
+		}
+		if(!has) {
+			if(throw_expection) { throw err("Check vector KEYS is not a subset of Map. key: \"%s\" is not inside in map keys", K.c_str()); }
+			else return false;
+		}
+	}
+	return true;
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
+
+template<typename T>
+bool u::map_check_key_subset(const T& map,
+							 const std::vector<std::string>& keys,
+							 const bool throw_expection)
+{ try {
+	if(map.size() > keys.size()) {
+		if(throw_expection) { throw err("Map keys is NOT a subset of Check vector KEYS. Size: map: %ld | Check vector KEYS: %ld", map.size(), keys.size()); }
+		else return false;
+	}
+	
+	for(const auto& [map_key, value] : map) {
+		bool has = false;
+		for(const auto& K : keys) {
+			if(map_key == K) {
+				has = true;
+				break;
+			}
+		}
+		if(!has) {
+			if(throw_expection) { throw err("Map key is not a subset of KEYS. Map key: \"%s\" is not inside in check vector KEYS", map_key.c_str()); }
+			else return false;
+		}
+	}
+	return true;
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 

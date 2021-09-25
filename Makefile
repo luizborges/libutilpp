@@ -7,7 +7,7 @@ DLIB_DIR_RPATH  = $(foreach dir,$(DLIB_DIR),   -Wl,-rpath=$(dir)) # add prefix t
 DLIB_NAME       = #-lerror -lstackTracer# insert here all dynamics libraries in DLIB_DIR_H you want to use
 # old -lclientOutput_strMap -lroute_easy -lclientInput_manager -lcookie_manager
 # OLD -LIBCOMMON = -lerror -lmemoryManager -lstackTracer -lfileUtil -larrayList_noSync -lmap_ArrayList_noSync -labstractFactoryCommon
-CFLAGS          = -Wall -g -Ofast -DNDEBUG -Wno-variadic-macros -fPIC -Wl,--export-dynamic # Werror transforms warning in error
+CFLAGS          = -Wall -Wextra -g -Ofast -DNDEBUG -Wno-variadic-macros -fPIC -Wl,--export-dynamic -std=c++17# Werror transforms warning in error
 DLIB_STD        = -lm -lpthread #-lfcgi -lgc
 DLIB            = $(DLIB_STD) $(DLIB_NAME)
 COMPILER_FLAGS  = $(CFLAGS) #$(DLIB_DIR_LPATH) $(DLIB_DIR_H_IPATH) use $(DLIB_DIR_LPATH) $(DLIB_DIR_H_IPATH) when the library is not in global environment
@@ -26,8 +26,8 @@ ERROR       = error/error.cpp
 LIBC_STDIO  = libc/stdio.cpp
 LIBC_STDLIB = libc/stdlib.cpp
 LIBC_STRING = libc/string.cpp
-STR			= str/str.cpp str/str_global.cpp
-GLOBAL		= global/global.cpp
+STR	    = str/str.cpp str/str_global.cpp
+GLOBAL	    = global/global.cpp
 ################################################
 # END
 ################################################

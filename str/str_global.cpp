@@ -30,7 +30,7 @@ u::ltrim(const std::string& str_ori)
 	std::string str = str_ori;
 	while(!str.empty()) {
 		if(std::isgraph(str.front())) return str; // não é espaço ou character similar
-		str.erase(0, 1);; // remove the first character of a string
+		str.erase(0, 1); // remove the first character of a string
 	}
 	return str;
  } catch (const std::exception &e) { throw err(e.what()); }
@@ -133,7 +133,7 @@ u::isalnum(const std::string& str, const long max_size,
 	}
 	
 	for(const auto& e : str) {
-		if(std::isdigit(e) == 0) {}
+		if(std::isalnum(e) != 0) {}
 		else if (!others.empty() && others.find(e) != std::string::npos) {}
 		else {
 			if(throw_expection) {
@@ -162,7 +162,7 @@ u::isalpha(const std::string& str, const long max_size,
 	}
 	
 	for(const auto& e : str) {
-		if(std::isdigit(e) == 0) {}
+		if(std::isalpha(e) != 0) {}
 		else if (!others.empty() && others.find(e) != std::string::npos) {}
 		else {
 			if(throw_expection) {
@@ -191,7 +191,7 @@ u::isdigit(const std::string& str, const long max_size,
 	}
 	
 	for(const auto& e : str) {
-		if(std::isdigit(e) == 0) {}
+		if(std::isdigit(e) != 0) {}
 		else if (!others.empty() && others.find(e) != std::string::npos) {}
 		else {
 			if(throw_expection) {
@@ -205,7 +205,22 @@ u::isdigit(const std::string& str, const long max_size,
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
-
+std::string 
+u::str_replace_all(const std::string& str_ori,
+                   const std::string& to_search, const std::string& to_replace)
+{ try {
+    std::string str = str_ori;
+    if(to_search.empty()) return str;
+    size_t pos = str.find(to_search); // Get the first occurrence
+    while(pos != std::string::npos) // Repeat till end is reached
+    {
+        str.replace(pos, to_search.size(), to_replace); // Replace this occurrence of Sub String
+        pos = str.find(to_search, pos + to_replace.size()); // Get the next occurrence from the current position
+    }
+    
+    return str;
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
 
 
 
