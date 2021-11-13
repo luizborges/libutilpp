@@ -222,7 +222,15 @@ u::str_replace_all(const std::string& str_ori,
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
-
+bool u::to_bool(const std::string& str, const bool throw_expection)
+{ try {
+    if(str == "true") return true;
+	if(str == "false") return false;
+	if(throw_expection) // caso se levante uma exceção
+		throw err("string does not represents a boolean value. str: \"%s\"", str.c_str());
+	return false; // para os demais casos.
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
 
 
 

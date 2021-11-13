@@ -224,6 +224,7 @@ class error : public std::exception
 	template<typename ... Args>
 	std::string sprintf(const std::string& sformat, Args ... args);
 	
+
 	/**
 	 * Verifica se a estrutura subset é um subconjunto da estrutura set.
 	 * @obs: exemplos de estruturas que funcionam: std::vector<>
@@ -239,7 +240,10 @@ class error : public std::exception
 	 */
 	template<typename T, typename U>
 	bool check_contains(const T& set, const U& subset, const bool equal = false, const bool throw_expection = true);
-	
+
+	////////////////////////////////////////////////////////////////////////////////
+	// map functions
+	////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * As funções abaixo checam se um map ou estrutura similar, tem suas chaves respeitando os seguintes regras.
 	 * @obs: é esperado que as chaves do map sejam string.
@@ -269,6 +273,19 @@ class error : public std::exception
 	 */
 	template<typename T>
 	bool map_check_key_subset(const T& map, const std::vector<std::string>& keys, const bool throw_expection = true);
+
+	/**
+	 * Esta função realiza um trim() em todos os valores do map.
+	 * As chaves não são modificadas, somente os valores.
+	 * value& = map[key];
+	 * map[key] = trim(map[key]).
+	 * o tipo de value deve ser uma std::string
+	 * A função necessita de pelo menos o C++17 para rodar, ela faz exatamente isso:
+	 * for(auto& [key, value] : @arg(map)) value = u::trim(value);
+	 * @arg map: map que terá seus valores sofrendo alteração pela função trim()
+	 */
+	template<typename MAP_T>
+	void map_trim(MAP_T& map);
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// string functions - in file:: str/str_global.cpp
@@ -305,7 +322,7 @@ class error : public std::exception
 	 * Funções para verificação de strings.
 	 * the same name of function in <cctype>
 	 * A escolha de utilizar o mesmo nome de cima é por legibilidade do código e também para deixar o código menor.
-	 * @arg str: string que será analisada.
+	 * @param str: string que será analisada.
 	 * @arg max_size: tamanho máximo que a string str pode ter. max_size = -1 -> não verifica o tamanho máximo
 	 * @arg min_size: tamanho mínimo que a string str pode ter. min_size = 0 -> a string can be empty.
 	 * @arg others: contém outros characteres permitidos para a string str
@@ -332,10 +349,16 @@ class error : public std::exception
      * @arg to_replace: string that will replace the to_search string.
      * @return a new string with replace. if no replace is done, the a new string equal the original string is returned.
      */
+	/**
+	 * MUDAR ESTA FUNÇÃO PARA ELA ACEITAR MAIS DOIS PARÂMETROS PARA DEIXAR ELA MUITO MAIS GENÉRICA E ÚTIL.
+	 * @param1: pos_begin: posição inicial na string @arg(str) que a busca pela string @arg(to_search) começa.
+	 * @param2: count: número de characteres máximo que é avançado na string @arg(str) após o character @arg(pos_begin).
+	 * Este é o padrão das funções da std::string, por exemplo: std::string::find
+	 */
     std::string str_replace_all(const std::string& str, const std::string& to_search, const std::string& to_replace);
 	
 	////////////////////////////////////////////////////////////////////////////////
-	// string functions
+	// string functions - in file:: str/str_global.cpp
 	////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * transform the char* str into a string.
@@ -348,6 +371,18 @@ class error : public std::exception
 	 * return b == false ? "false" : "true";
 	 */
 	inline std::string to_str(const bool b);
+
+	/**
+	 * Retorna um bool que representa a string.
+	 * A string deve ter os seguintes valores:
+	 * "true" -> retorna true
+	 * "false" -> retorna false
+	 * A função é case sensitive, ou seja, "true" != "TRUE"
+	 * Caso a string contenha outro valor, a resposta depende do parâmetro throw_expection.
+	 * @arg throw_expection: true -> caso a @arg(str) não seja "true" ou "false", retorna uma exceção.
+	 * false -> retorna false se a @arg(str) não for "true" ou "false".
+	 */
+	bool to_bool(const std::string& str, const bool throw_expection = true);
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// functions of std::variant<>
@@ -545,7 +580,7 @@ bool u::map_check_key(const T& map,
 			}
 		}
 		if(!has) {
-			if(throw_expection) { throw err("Map key and check vector KEYS are not equal. Map key: \"%s\" not inside in check vector keys", map_key.c_str()); }
+			if(throw_expection) { throw err("Map key and check vector KEYS are not equal. Map key: \"%s\" is not inside in check vector keys", map_key.c_str()); }
 			else return false;
 		}
 	}
@@ -607,6 +642,13 @@ bool u::map_check_key_subset(const T& map,
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
+template<typename MAP_T>
+void u::map_trim(MAP_T& map)
+{ try {
+	for(auto& [key, value] : map)
+		value = u::trim(value);
+ } catch (const std::exception &e) { throw err(e.what()); }
+}
 ////////////////////////////////////////////////////////////////////////////////
 // string functions
 ////////////////////////////////////////////////////////////////////////////////
