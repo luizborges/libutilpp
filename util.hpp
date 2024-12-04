@@ -27,6 +27,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <sstream> // for ostringstream
+#include <unordered_set>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Includes - system dependent libraries
@@ -131,19 +133,26 @@ namespace str
 // syntatic sugar to throw error or warning - see the end of this file
 class error : public std::exception
 { public:
-	static error& msg(const int line = -1,
+	static error msg(const int line = -1,
 					const int line_call_me = -1,
 					const char *type = "",
 					const char *file = "",
 					const char *func = "",
 					const char *check_args = nullptr,  ...);
+
+        static error msgs(const int line = -1,
+                           const int line_call_me = -1,
+                           const char *type = "",
+                           const std::string &file = "",
+                           const std::string &func = "",
+                           const std::string &user_error_msg = "");
 	
 	/**
 	 * Essa função pode ser utilizada quando a função que a chama já recebe um número
 	 * indefinido de argumntos. - A mudança na ordem dos argumentos foi para possibilitar
 	 * o overloading. - essa segunda ordem, não possui macro ainda
 	 */
-	static error& msgv(
+	static error msgv(
 		const int line = -1,
 		const int line_call_me = -1,
 		const char *type = "",
@@ -160,7 +169,7 @@ class error : public std::exception
 	static void set_header(bool header = true);
 	
 	/**
-	 * seta se todas as chamadas das funções msg() e msgv() serão guardadas.
+	 * seta se todas as chamadas das funções msgs(), msg() e msgv() serão guardadas.
 	 * elas ainda serão escritas na saída stderr, mas também poderão ser recuperadas.
 	 * @obs: está funcionalidade é ideal para logar em outro arquivo ou para 
 	 * exibir em outro lugar as saídas geradas.
@@ -260,7 +269,7 @@ class error : public std::exception
 	 * As chaves do map devem ser iguais, não necessariamente na mesma ordem, aos valores de keys.
 	 */
 	template<typename T>
-	bool map_check_key(const T& map, const std::vector<std::string>& keys, const bool throw_expection = true);
+        bool map_check_key(const T& map, const std::unordered_set<std::string>& keys, const bool throw_expection = true);
 	
 	/**
 	 * Os valores de keys devem ser igual ou um subconjunto das chaves de map.
@@ -272,7 +281,7 @@ class error : public std::exception
 	 * As chaves do map devem ser iguais ou um subconjunto aos valores de keys.
 	 */
 	template<typename T>
-	bool map_check_key_subset(const T& map, const std::vector<std::string>& keys, const bool throw_expection = true);
+    bool map_check_key_subset(const T& map, const std::unordered_set<std::string>& keys, const bool throw_expection = true);
 
 	/**
 	 * Esta função realiza um trim() em todos os valores do map.
@@ -347,15 +356,14 @@ class error : public std::exception
      * @arg str: string in that search will occur.
      * @arg to_search: string to be search and replaced. If to_search is "" -> a str equal to str is returned.
      * @arg to_replace: string that will replace the to_search string.
+	 * @arg begin: init position int the @arg(str) that is count as string that will be submit to change
+	 * @arg count: number of character that will compound the string that will be submit to change
+	 * Os argumentos @arg(begin) e @arg(count) funcionam da mesma forma que os argumentos de mesmo nome da função std::string::find. Ou seja, eles delimitam a parte da string de entrada que será submetida ao replace_all. As outras partes de fora da string (anterior e posterior), se houverem, serão deixadas intactas e apenas anexadas (anteriormente ou posteriormente) a nova string gerada, de acordo com a posição que elas ocupavam antes da modificação da string.
+	 * @obs: é gerada uma nova string, e a string original é deixada intacta.
      * @return a new string with replace. if no replace is done, the a new string equal the original string is returned.
      */
-	/**
-	 * MUDAR ESTA FUNÇÃO PARA ELA ACEITAR MAIS DOIS PARÂMETROS PARA DEIXAR ELA MUITO MAIS GENÉRICA E ÚTIL.
-	 * @param1: pos_begin: posição inicial na string @arg(str) que a busca pela string @arg(to_search) começa.
-	 * @param2: count: número de characteres máximo que é avançado na string @arg(str) após o character @arg(pos_begin).
-	 * Este é o padrão das funções da std::string, por exemplo: std::string::find
-	 */
-    std::string str_replace_all(const std::string& str, const std::string& to_search, const std::string& to_replace);
+    // std::string str_replace_all(const std::string& str, const std::string& to_search, const std::string& to_replace);
+	std::string str_replace_all(const std::string& str, const std::string& to_search, const std::string& to_replace, const size_t begin = 0, const size_t count = std::string::npos);
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// string functions - in file:: str/str_global.cpp
@@ -383,6 +391,37 @@ class error : public std::exception
 	 * false -> retorna false se a @arg(str) não for "true" ou "false".
 	 */
 	bool to_bool(const std::string& str, const bool throw_expection = true);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // string functions - in file:: str/str_global.cpp
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+         * As funções abaixo servem para realizar o seguinte código:
+         * sout(...) = string out -> é uma função similar ao sprintf(), porém com vantagens
+         * de não necessitar de colocar qual é o tipo a ser passado (%d,%s,%ld,%f, etc)
+         * e da vantagem de aceitar os tipos em C++, principalmente string, sem precisar
+         * de fazer a conversão para C-style string por meio da função: std::string::c_str()
+         * O objetivo é:
+         * -> não utilizar macros;
+         * -> ser tão flexível quanto std::cout << para receber os tipos e classes de C++
+         * -> ter uma sintaxe não tão verbosa quanto a do std::cout <<
+         * -> aceitar um número indeterminado de parâmetros.
+         * Obs: está função é essencial para a macro de lançamento de exceção erx(), por este
+         * motivo ela utiliza ainda a macro antiga. (err()).
+         * As funções args_to_str() são necessárias para realizar a recursividade necessária
+         * para a execução de um template com um número indeterminado de parâmetros.
+         * Caso não seja passado nenhum argumento, é retornado uma string vazia ("", size: 0).
+     */
+
+    inline std::string args_to_str(const std::ostringstream &os);
+
+    template<typename T, typename ... Args>
+    std::string args_to_str(std::ostringstream &os, const T val,  const Args ... args);
+
+    template<typename ... Args>
+    std::string sout(const Args ... args);
+
 	
 	////////////////////////////////////////////////////////////////////////////////
 	// functions of std::variant<>
@@ -444,9 +483,153 @@ class error : public std::exception
 } // end of namespace util
 
 ////////////////////////////////////////////////////////////////////////////////
+// namespace
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * A ideia é ir adequando aos poucos ao novo formato de nome implementado, para maior clareza e organização do código.
+ * Não se mudará tudo de uma vez devido ao refactoring necessário no código legado.
+ */
+namespace borges
+{
+	namespace util
+	{
+		/**
+		 * A ideia é padronizar o modo como é exibido as mensagens de erros para o usuário.
+		 * Assim, uma função básica foi criada para auxiliar nessa criação.
+		 * Pois se mudar essa função, todas as classes que a utilizam terão os suas mensagens
+		 * automaticamente alteradas para o novo padrão.
+		 */
+		inline std::string make_error_msg(
+				const std::string& error_msg = "",
+                const std::string& file = "NO_FILE", 
+                const std::string& func = "NO_FUNCTION", 
+                const int line = -1);
+		
+
+		////////////////////////////////////////////////////////////////////////////////
+		// interface to error stack tree class
+		////////////////////////////////////////////////////////////////////////////////
+		/**
+		 * A ideia dessa interface é fazer uma interface para qualquer classe de erro
+		 * utilizar essa interface para gravar as mensagens de erro em uma estrutura que pode variar
+		 * e assim não necessitar mudar a implementação da classes.
+		 * Essa interafce será utilizada para ao final exibir ao usuário um stack trace error completo, que poderá ser por meio de uma nova interface.
+		 * É utilizada principalmente no backend de aplicações web.
+		 * A escolha de uma classe com métodos virtuais, e uma implementação padrão, e não uma interface pura foi escolhida para se ter um comportamento default e para facilitar a portabilidade do código.
+		 * A ideia da classe error_stacktrace é separar, desacoplar, a parte de criação do stacktrace, sua interface, com as classes/interfaces que estruturam e exibem o stacktrace para o usuário.
+		 * Isto dá maior flexibilidade, portabilidade e visa melhor a manutenção e melhoramento do código.
+		 */
+		class error_stacktrace
+		{
+			public:
+			
+			/**
+			 * Adiciona informações de log no stacktrace.
+			 * @obs: Foi colocado o error_msg como primeiro argumento, pois de todos os argumentos defaults que podem ser colocados, ele é o que faz mais sentido ter algo quando os outros contenham seus valores defaults.
+			 * Isto considerando que a função será colocada de forma manual.
+			 * De forma automática não conta, pois na maioria dos casos isso será feito por meio de macros, logo o esforço inexiste.
+			 */
+			virtual void add(
+				const std::string& error_msg = "",
+				const std::string& file = "NO_FILE", 
+                const std::string& func = "NO_FUNCTION", 
+                const int line = -1) 
+				{ 
+					std::cerr << "DO NOTHING - NOT ACTIVE CLASS borges::util::error_stacktrace - printing received values in arguments in std::cerr. - file: " << file << " | func: " << func << " | line: " << line << " | error msg: '" << error_msg << "'\n";
+				}
+			
+			/**
+			 * Informa se a classe está ativa ou não.
+			 * Quando a classe retorna 'false' significa que a classe não está implementada ou com a implementação padrão.
+			 * Ou seja, as classes que especializarem, que extenderem essa classe, deverão, retornar 'true' para esta função.
+			 */
+			virtual bool live() { return false; }
+		};
+
+		/**
+		 * Implementação da interface error_stacktrace.
+		 * Essa implmentação visa dar maior flexibilidade.
+		 * Foi escolhido deixar a classe com funções que por default tem argumentos válidos, do 
+		 * que implementar uma interface pura.
+		 * A ideia desta classe de implementação, é em um primeiro momento, realizar uma "ponte" uma "interface" de conexão com a classe u::error, visando a portabilidade e código já legado.
+		 */
+		class error_stacktrace_impl : public error_stacktrace
+		{
+			public:
+			virtual void add(
+				const std::string& error_msg = "",
+				const std::string& file = "NO_FILE", 
+                const std::string& func = "NO_FUNCTION", 
+                const int line = -1) 
+				{
+					u::error::msgs(line, -1, "ERROR", 
+								   file, func, error_msg);
+
+				}
+
+			virtual bool live() { return true; }
+		};
+
+		/**
+		 * Essas definições de inline somente funcionam em compiladores C++17 para cima.
+		 */
+		inline error_stacktrace_impl Error_StackTrace_IMPL; // defined in error.cpp
+		inline error_stacktrace& Error_StackTrace = Error_StackTrace_IMPL; // = Error_StackTrace_IMPL; // defined in error.cpp
+
+		////////////////////////////////////////////////////////////////////////////////
+		// string functions - in file:: str/str_global.cpp
+		////////////////////////////////////////////////////////////////////////////////
+		/**
+		 * transform the char* str into a string.
+		 * it is useful for check: str = nullptr then the result is the value of nullstr.
+		 * The default value of nullstr is "" (empty string).
+		 * str == nullptr ? nullstr : str;
+		 */
+		inline std::string to_str(const char *str, const std::string& nullstr = "")
+		{
+			return str == nullptr ? nullstr : str;
+		}
+
+		/**
+		 * transform the bool into a string.
+		 * return b == false ? "false" : "true";
+		 */
+		inline std::string to_str(const bool b)
+		{
+			return b ? "true" : "false";
+		}
+
+		/**
+		 * Retorna um bool que representa a string.
+		 * A string deve ter os seguintes valores:
+		 * "true" -> retorna true
+		 * "false" -> retorna false
+		 * A função NÃO é case sensitive, ou seja, "true" == "TRUE" == "True" == ...
+		 * Caso a string contenha outro valor, a resposta depende do parâmetro throw_expection.
+		 * @arg throw_expection: true -> caso a @arg(str) não seja "true" ou "false", retorna uma exceção.
+		 * false -> retorna false se a @arg(str) não for "true" ou "false".
+		 */
+		inline bool to_bool(const std::string& str, const bool throw_expection = true);
+
+	} // end of namespace util
+} // end of namespace borges
+
+
+////////////////////////////////////////////////////////////////////////////////
 // syntatic sugar macro - feito para class error
 ////////////////////////////////////////////////////////////////////////////////
 #if defined(__GNUC__) || defined(__clang__)
+
+#ifndef erx
+#define erx(...) \
+        u::error::msgs(__LINE__, -1, "ERROR", __FILE__, __PRETTY_FUNCTION__, u::sout(__VA_ARGS__));
+#endif
+
+#ifndef erxl
+#define erxl(LINE, ...)\
+        u::error::msgs(__LINE__, LINE, "ERROR", __FILE__, __PRETTY_FUNCTION__, u::sout(__VA_ARGS__));
+#endif
+
 #ifndef err
 #define err(...) \
 	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __PRETTY_FUNCTION__, #__VA_ARGS__, ##__VA_ARGS__);
@@ -468,6 +651,17 @@ class error : public std::exception
 #endif
 
 #elif defined(_MSC_VER) // compilador da microsoft
+
+#ifndef erx
+#define erx(...) \
+        u::error::msgs(__LINE__, -1, "ERROR", __FILE__, __FUNCSIG__, u::sout(__VA_ARGS__));
+#endif
+
+#ifndef erxl
+#define erxl(LINE, ...)\
+        u::error::msgs(__LINE__, LINE, "ERROR", __FILE__, __FUNCSIG__, u::sout(__VA_ARGS__));
+#endif
+
 #ifndef err
 #define err(...) \
 	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __FUNCSIG__, #__VA_ARGS__, ##__VA_ARGS__);
@@ -489,6 +683,27 @@ class error : public std::exception
 #endif
 
 #else // qualquer outro compilador
+
+#ifndef erx
+#define erx(...) \
+        u::error::msgs(__LINE__, -1, "ERROR", __FILE__, __func__, u::sout(__VA_ARGS__));
+#endif
+
+#ifndef erxl
+#define erxl(LINE, ...)\
+        u::error::msgs(__LINE__, LINE, "ERROR", __FILE__, __func__, u::sout(__VA_ARGS__));
+#endif
+
+#ifndef ero
+#define ero(...) \
+        u::error::msgs(__LINE__, -1, "ERROR", __FILE__, __func__, u::sout(__VA_ARGS__));
+#endif
+
+#ifndef erol
+#define erol(LINE, ...)\
+        u::error::msgs(__LINE__, LINE, "ERROR", __FILE__, __func__, u::sout(__VA_ARGS__));
+#endif
+
 #ifndef err
 #define err(...) \
 	u::error::msg(__LINE__, -1, "ERROR", __FILE__, __func__, #__VA_ARGS__, ##__VA_ARGS__);
@@ -516,7 +731,7 @@ class error : public std::exception
 template<typename ... Args>
 std::string u::sprintf(const std::string& sformat, Args ... args)
 { try {
-	int size = std::snprintf( nullptr, 0, sformat.c_str(), args ... ) + 1; // Extra space for '\0'
+    int size = std::snprintf( nullptr, 0, sformat.c_str(), args ... ) + 1; // Extra space for '\0'
     if( size <= 0 ){ throw err("Error during formatting.\nstr: \"%s\"", sformat.c_str()); }
     std::unique_ptr<char[]> buf = std::make_unique<char[]>(size); 
     std::snprintf( buf.get(), size, sformat.c_str(), args ... );
@@ -563,26 +778,22 @@ bool u::check_contains(const T& set, const U& subset,
 
 template<typename T>
 bool u::map_check_key(const T& map,
-					  const std::vector<std::string>& keys,
-					  const bool throw_expection)
+                      const std::unordered_set<std::string>& keys,
+                      const bool throw_expection)
 { try {
 	if(map.size() != keys.size()) {
-		if(throw_expection) { throw err("Map is not equal Check vector KEYS. Size: Map: %ld | Check vector KEYS: %ld", map.size(), keys.size()); }
-		else return false;
+                if(throw_expection) {
+                    throw ero("Map is not equal Check vector KEYS. Size: Map: ",map.size(),", Check vector KEYS: ", keys.size());
+                } else return false;
 	}
 	
-	for(const auto& [map_key, value] : map) {
-		bool has = false;
-		for(const auto& K : keys) {
-			if(map_key == K) {
-				has = true;
-				break;
-			}
-		}
-		if(!has) {
-			if(throw_expection) { throw err("Map key and check vector KEYS are not equal. Map key: \"%s\" is not inside in check vector keys", map_key.c_str()); }
-			else return false;
-		}
+        for(const auto& [map_key, value] : map) {
+                if(!keys.count(map_key)) {
+                    if(throw_expection) {
+                        throw ero("Map key and check vector KEYS are not equal. Map key: \'",map_key,"\' is not inside in check vector keys");
+                    }
+                    else return false;
+                }
 	}
 	return true;
  } catch (const std::exception &e) { throw err(e.what()); }
@@ -590,8 +801,8 @@ bool u::map_check_key(const T& map,
 
 template<typename T>
 bool u::map_check_key_has(const T& map,
-						  const std::vector<std::string>& keys,
-						  const bool throw_expection)
+                          const std::vector<std::string>& keys,
+                          const bool throw_expection)
 { try {
 	if(map.size() < keys.size()) {
 		if(throw_expection) { throw err("Map is less than his subset check vector KEYS. Size: Map: %ld | Check vector KEYS: %ld", map.size(), keys.size()); }
@@ -599,17 +810,11 @@ bool u::map_check_key_has(const T& map,
 	}
 	
 	for(const auto& K : keys) {
-		bool has = false;
-		for(const auto& [map_key, value] : map) {
-			if(map_key == K) {
-				has = true;
-				break;
-			}
-		}
-		if(!has) {
-			if(throw_expection) { throw err("Check vector KEYS is not a subset of Map. key: \"%s\" is not inside in map keys", K.c_str()); }
-			else return false;
-		}
+            if(!map.count(K)) {
+                if(throw_expection) {
+                    throw err("Check vector KEYS is not a subset of Map. key: \"%s\" is not inside in map keys", K.c_str());
+                } else return false;
+            }
 	}
 	return true;
  } catch (const std::exception &e) { throw err(e.what()); }
@@ -617,26 +822,19 @@ bool u::map_check_key_has(const T& map,
 
 template<typename T>
 bool u::map_check_key_subset(const T& map,
-							 const std::vector<std::string>& keys,
-							 const bool throw_expection)
+                             const std::unordered_set<std::string>& keys,
+                             const bool throw_expection)
 { try {
 	if(map.size() > keys.size()) {
 		if(throw_expection) { throw err("Map keys is NOT a subset of Check vector KEYS. Size: map: %ld | Check vector KEYS: %ld", map.size(), keys.size()); }
 		else return false;
 	}
 	
-	for(const auto& [map_key, value] : map) {
-		bool has = false;
-		for(const auto& K : keys) {
-			if(map_key == K) {
-				has = true;
-				break;
-			}
-		}
-		if(!has) {
-			if(throw_expection) { throw err("Map key is not a subset of KEYS. Map key: \"%s\" is not inside in check vector KEYS", map_key.c_str()); }
-			else return false;
-		}
+        for(const auto& [map_key, value] : map) {
+            if(!keys.count(map_key)) {
+                if(throw_expection) { throw err("Map key is not a subset of KEYS. Map key: \"%s\" is not inside in check vector KEYS", map_key.c_str()); }
+                else return false;
+            }
 	}
 	return true;
  } catch (const std::exception &e) { throw err(e.what()); }
@@ -654,13 +852,71 @@ void u::map_trim(MAP_T& map)
 ////////////////////////////////////////////////////////////////////////////////
 inline std::string
 u::to_str(const char *str) {
-	return str == nullptr ? "" : str;
+    return str == nullptr ? "" : str;
 }
 
 inline std::string
 u::to_str(const bool b) {
-	return b == false ? "false" : "true";
+    return b == false ? "false" : "true";
 }
+
+inline std::string u::args_to_str(const std::ostringstream &os) {
+	return os.str();
+}
+
+template<typename T, typename ... Args>
+std::string u::args_to_str(std::ostringstream &os, const T val,  const Args ... args) {
+	if constexpr(std::is_pointer<T>::value) {
+        if(val == nullptr || val == NULL) {
+            os << "";
+        } else {
+            os << val;
+        }
+    } else {
+        os << val;
+    }
+    
+    return args_to_str(os, args ...);
+}
+
+template<typename ... Args>
+std::string u::sout(const Args ... args) {
+	std::ostringstream os;
+    return args_to_str(os, args ...);
+}
+
+bool 
+borges::util::to_bool(const std::string& str, const bool throw_expection)
+{ 
+	try {
+		const auto lstr = u::tolower(str);
+		if(str == "true") return true;
+		if(str == "false") return false;
+		if(throw_expection) { // caso se levante uma exceção
+			throw erx("string does not represents a boolean value. str: ',str,'");
+		}
+		return false; // para os demais casos.
+	} catch (const std::exception &e) { throw erx(e.what()); }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// error functions
+////////////////////////////////////////////////////////////////////////////////
+
+std::string 
+borges::util::make_error_msg( 
+	const std::string& error_msg, 
+	const std::string& file,
+	const std::string& func,
+	const int line)
+{
+	std::string str = error_msg.empty() ? "" : error_msg + "\n";
+	// return str + "'" + func + "'('" + file + ",'" + std::to_string(line) + ")";
+	return str + "" + func + "(" + std::to_string(line) + ",'" + file + "')";
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // implentation of C function
