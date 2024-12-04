@@ -1,5 +1,15 @@
 #include "../util.hpp"
 
+//////////////////////////////////////////////////////////////////////////////
+// class borges::util::error_stacktrace 
+//////////////////////////////////////////////////////////////////////////////
+// static borges::util::error_stacktrace_impl Error_StackTrace_IMPL;
+// static borges::util::error_stacktrace& Error_StackTrace = Error_StackTrace_IMPL;
+
+//////////////////////////////////////////////////////////////////////////////
+// class u::error
+//////////////////////////////////////////////////////////////////////////////
+
 int u::line = -1; // iniciatlization
 
 bool u::error::header = true; // initializing
@@ -9,7 +19,7 @@ bool u::error::has_trace = false;
 std::string u::error::trace_str = "";
 static u::error _error;
 
-u::error&
+u::error
 u::error::msg(
 	const int line,
 	const int line_call_me,
@@ -111,7 +121,7 @@ u::error::show_header(const char *type)
 	}
 }
 
-u::error&
+u::error
 u::error::msgv(
 	const int line,
 	const int line_call_me,
@@ -128,9 +138,10 @@ u::error::msgv(
   // 1024 - is a size of string ErrorInfo - always check this size
   // se a string resultante for maior que o size of string o restante que é maior será descartado
 	if(line_call_me < 0) {
-		snprintf(ErrorInfo, 1024, "\"%s\" (%d, \"%s\")", func, line, file);
+		// snprintf(ErrorInfo, 1024, "\"%s\" (%d, \"%s\")", func, line, file);
+		snprintf(ErrorInfo, 1024, "%s (%d,'%s')", func, line, file);
 	} else {
-		snprintf(ErrorInfo, 1024, "[[%d]] \"%s\" (%d, \"%s\")", 
+		snprintf(ErrorInfo, 1024, "[[%d]] %s (%d,'%s')", 
 			line_call_me, func, line, file);
 		/*snprintf(ErrorInfo, 1024, "[called in line %d] \"%s\" (%d, \"%s\")", 
 		snprintf(ErrorInfo, 1024, "[run time parent func line %d call] \"%s\" (%d, \"%s\")", 
@@ -192,7 +203,44 @@ u::error::get_trace(void)
     return trace_str;
 }
 
+u::error
+u::error::msgs(
+        const int line,
+        const int line_call_me,
+        const char *type,
+        const std::string &file,
+        const std::string &func,
+        const std::string &user_error_msg)
+{
+    //////////////////////////////////////////////////////////////////////////////
+    // file & line & function information
+    //////////////////////////////////////////////////////////////////////////////
+    std::string errorInfo;
+    if(line_call_me > -1) {
+        errorInfo = "[[" + std::to_string(line_call_me) + "]] ";
+    }
 
+    // errorInfo += "\""+func+"\" ("+std::to_string(line)+", \""+file+"\")";
+	errorInfo += func + " ("+std::to_string(line)+",'"+file+"')";
+
+    //////////////////////////////////////////////////////////////////////////////
+    // user msg information
+    //////////////////////////////////////////////////////////////////////////////
+    if(header) {
+        show_header(type);
+        header = false;
+    }
+
+    if(!user_error_msg.empty()) { //va_list msgUserArgs is empty
+        std::cerr << user_error_msg << "\n";
+        if(has_trace) trace_str +="<b>"+user_error_msg+"</b>\n<br>";
+    }
+
+    std::cerr << errorInfo << "\n";
+    if(has_trace) trace_str += errorInfo + "\n<br>";
+
+    return _error;
+}
 
 
 
