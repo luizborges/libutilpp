@@ -205,12 +205,41 @@ u::isdigit(const std::string& str, const long max_size,
  } catch (const std::exception &e) { throw err(e.what()); }
 }
 
+// backup do código do str_replace_all que funciona originalmente sem os parametros begin e count.
+// std::string 
+// u::str_replace_all(const std::string& str_ori,
+//                    const std::string& to_search, const std::string& to_replace)
+// { try {
+//     std::string str = str_ori;
+//     if(to_search.empty()) return str;
+//     size_t pos = str.find(to_search); // Get the first occurrence
+//     while(pos != std::string::npos) // Repeat till end is reached
+//     {
+//         str.replace(pos, to_search.size(), to_replace); // Replace this occurrence of Sub String
+//         pos = str.find(to_search, pos + to_replace.size()); // Get the next occurrence from the current position
+//     }
+    
+//     return str;
+//  } catch (const std::exception &e) { throw err(e.what()); }
+// }
+
 std::string 
 u::str_replace_all(const std::string& str_ori,
-                   const std::string& to_search, const std::string& to_replace)
+                   const std::string& to_search, const std::string& to_replace,
+				   const size_t begin, const size_t count)
 { try {
-    std::string str = str_ori;
-    if(to_search.empty()) return str;
+	if(begin >= str_ori.size()) throw erx("Begin position of search in string is greater or equal than string size. Begin: ",begin,", String size: ",str_ori.size(),", String: '",str_ori,"'");
+	if(count <= 0) return str_ori; // a string retorno é igual a original
+	if(to_search.empty()) return str_ori; // a string de retorno é igual a original
+	// if(count < to_search.size()) throw erx("Number of characters in search str_ori string (count) of to_search string is less than to_search string size. Count: ",count,", to_search.size(): ",to_search.size(),", String: '",str_ori,"', to_search: '",to_search,"'");
+
+	////////////////////////////////////////////////////////////////////////////////
+	// trata a parte da string que será alterada, ou seja
+	// a parte da string que tem o começo em begin e que possui count characteres
+	////////////////////////////////////////////////////////////////////////////////
+	std::string_view strv = str_ori; // linha é necessário, caso contrário, é criado uma nova string pelo str.substr().
+	strv = strv.substr(begin, count); // apenas trabalha dentro do range dado pelo usuário.
+    std::string str = std::string(strv);
     size_t pos = str.find(to_search); // Get the first occurrence
     while(pos != std::string::npos) // Repeat till end is reached
     {
@@ -218,6 +247,24 @@ u::str_replace_all(const std::string& str_ori,
         pos = str.find(to_search, pos + to_replace.size()); // Get the next occurrence from the current position
     }
     
+	////////////////////////////////////////////////////////////////////////////////
+	// insere o começo da string que não foi alterado - ou seja, a parte anterior
+	// a @arg(begin) in str_ori
+	////////////////////////////////////////////////////////////////////////////////
+	if(begin > 0)
+	{
+		str = str_ori.substr(0, begin) + str;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// insere o final da string que não foi alterado - ou seja,
+	// a parte de str_ori que fica depois de count, com o começo em begin
+	////////////////////////////////////////////////////////////////////////////////
+	if(str_ori.size() > begin + strv.size())
+	{
+		str += str_ori.substr(begin+count);
+	}
+
     return str;
  } catch (const std::exception &e) { throw err(e.what()); }
 }
